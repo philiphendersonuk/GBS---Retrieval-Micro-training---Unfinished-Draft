@@ -1,0 +1,463 @@
+* { box-sizing: border-box; }
+
+:root {
+  --bg:#f6f8fb;
+  --card:#fff;
+  --text:#0f172a;
+  --muted:#334155;
+  --brand:#3b82f6;
+  --brand-dark:#1e40af;
+  --ok:#16a34a;
+  --warn:#b45309;
+  --border:#e2e8f0;
+}
+
+/* Base layout & typography */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+  font-size: 28px; /* desktop default */
+}
+
+h1 {
+  font-size: 44px;
+  margin: 0 0 8px;
+}
+
+h2 {
+  font-size: 34px;
+  margin: 0 0 12px;
+}
+
+p,
+li,
+label,
+legend {
+  font-size: 28px;
+}
+
+legend {
+  font-weight: 600;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Header & logo */
+
+.app-header {
+  background: linear-gradient(135deg, #f7797d 0%, #fcb69f 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+}
+
+header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  height: 200px;
+}
+
+/* Footer / Navigation */
+
+.app-footer {
+  background: linear-gradient(135deg, #eef2f7 0%, #e6f0ff 100%);
+  border-top: 1px solid var(--border);
+  padding: 14px 0;
+}
+
+.footer-inner {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+#navStatus {
+  min-width: 240px;
+  text-align: center;
+  font-size: 22px;
+}
+
+/* Main card & slides */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.06);
+}
+
+.slide {
+  display: none;
+}
+
+.slide.active {
+  display: block;
+  animation: fade 0.2s ease-in;
+}
+
+/* Buttons */
+
+.btn {
+  font-size: 24px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.05s ease, background 0.2s ease;
+}
+
+.btn:hover {
+  background: var(--brand-dark);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+
+/* Forms, messages, activities */
+
+fieldset {
+  margin: 16px 0;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.msg {
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+.msg.ok {
+  color: var(--ok);
+}
+
+.msg.warn {
+  color: var(--warn);
+}
+
+.activity-box {
+  border: 1px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+textarea {
+  width: 100%;
+  font-size: 22px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* Utility classes */
+
+.small {
+  font-size: 22px;
+  color: var(--muted);
+}
+
+/* Grid layout */
+
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+.grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Flip cards */
+
+.slide[data-slide="3"] .grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.slide[data-slide="3"] .flip {
+  width: 100%;
+  height: 240px;
+  perspective: 1000px;
+  border: 0;
+}
+
+.slide[data-slide="3"] .flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  will-change: transform;
+}
+
+.slide[data-slide="3"] .flip-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-sizing: border-box;
+  backface-visibility: hidden;
+}
+
+.slide[data-slide="3"] .flip-front {
+  transform: rotateY(0deg);
+}
+
+.slide[data-slide="3"] .flip-back {
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  font-size: 0.8em;
+  line-height: 1.4;
+}
+
+.slide[data-slide="3"] .flip.show .flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* Drag & drop */
+
+.draggable {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  border: 1px solid var(--brand);
+  padding: 8px 10px;
+  border-radius: 10px;
+  display: inline-block;
+  background: #eef6ff;
+  cursor: grab;
+  margin: 6px 6px 0 0;
+}
+
+/* Selected tile (tap-to-move highlight) */
+.draggable.selected {
+  outline: 3px solid var(--brand-dark);
+  background: #dbeafe;
+}
+
+.dropzone {
+  min-height: 46px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 8px;
+  margin-top: 6px;
+  background: #f8fafc;
+}
+
+.dropzone.over {
+  border-color: var(--brand);
+}
+
+.pair {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 10px 0;
+}
+
+.def {
+  flex: 1;
+}
+
+.def h4 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+/* Animations */
+
+@keyframes fade {
+  from {
+    opacity: .6;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------ */
+/* RESPONSIVE / MOBILE FIXES      */
+/* ------------------------------ */
+
+/* Collapse 3-column grids to 2-column globally */
+@media (max-width: 900px) {
+  .grid.cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Flip-cards become 1-column on tablet & mobile */
+@media (max-width: 900px) {
+  .slide[data-slide="3"] .grid {
+    grid-template-columns: 1fr; /* 6 rows */
+  }
+
+  .slide[data-slide="3"] .flip {
+    height: auto;
+    min-height: 180px;
+  }
+
+  .slide[data-slide="3"] .flip-inner {
+    height: auto;
+  }
+
+  .slide[data-slide="3"] .flip-face {
+    padding: 20px;
+  }
+}
+
+/* Tablet breakpoint */
+@media (max-width: 768px) {
+  body {
+    font-size: 18px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  p,
+  li,
+  label,
+  legend {
+    font-size: 18px;
+  }
+
+  .small {
+    font-size: 16px;
+  }
+
+  #navStatus {
+    font-size: 16px;
+    min-width: auto;
+  }
+
+  .btn {
+    font-size: 18px;
+    padding: 8px 14px;
+  }
+
+  .card {
+    padding: 18px;
+    margin: 16px 0;
+  }
+
+  .logo {
+    height: 140px;
+  }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  p,
+  li,
+  label,
+  legend {
+    font-size: 16px;
+  }
+
+  .small {
+    font-size: 14px;
+  }
+
+  .wrap {
+    padding: 0 16px;
+  }
+
+  .card {
+    padding: 16px;
+    margin: 14px 0;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .logo {
+    height: 110px;
+    right: 10px;
+  }
+
+  .grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Videos always responsive */
+
+video,
+#exitVideo {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  display: block;
+}
