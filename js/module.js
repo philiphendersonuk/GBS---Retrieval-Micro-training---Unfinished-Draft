@@ -1,56 +1,83 @@
 (function () {
-  // Cache DOM
+  "use strict";
+
+  // ============================================================
+  // Retrieval CPD course
+  // Behaviour + light-touch SCORM analytics.
+  // No interaction is gated and no score/pass/fail is set here.
+  // Formal assessment is intentionally handled separately in the VLE.
+  // ============================================================
+
   var slides = Array.from(document.querySelectorAll(".slide"));
   var backBtn = document.getElementById("backBtn");
   var nextBtn = document.getElementById("nextBtn");
   var slideNum = document.getElementById("slideNum");
   var slideCount = document.getElementById("slideCount");
-  var submitQuiz = document.getElementById("submitQuiz");
-  var quizMsg = document.getElementById("quizMsg");
-  var actMsg = document.getElementById("actMsg");
+  var progressLabel = document.getElementById("progressLabel");
+  var progressFill = document.getElementById("progressFill");
 
-  // Counters
-  if (slideCount) slideCount.textContent = String(slides.length);
-
-  // Gate flags
-  var tfPassed = false; // slide index 2
-  var orderDone = false; // slide index 4
-  var matchDone = false; // slide index 5
-
-  // Drag/drop + tap-to-move state
+  var current = 0;
+  var selectedSortCard = null;
+  var selectedTimelineItem = null;
   var dragged = null;
-  var selectedTile = null;
 
-  // Analytics variables (stored in cmi.suspend_data)
-  var tfAttempts = 0;
-  var orderAttempts = 0;
-  var matchAttempts = 0;
-  var exitVideoMaxProgress = 0; // 0–1 fraction
-  var exitVideoMaxSeconds = 0;  // max seconds watched
+  var analytics = {
+    version: 1,
+    reviewVsRetrieval: {
+      attempted: false,
+      firstResponse: null,
+      latestResponse: null
+    },
+    retrievalSort: {
+      attempted: false,
+      attempts: 0,
+      firstScore: null,
+      bestScore: 0
+    },
+    memoryExperiment: {
+      attempted: false
+    },
+    scenarioComparison: {
+      attempted: false,
+      firstResponse: null,
+      latestResponse: null
+    },
+    principle1InitialRecall: {
+      attempted: false
+    },
+    principle1DelayedRecall: {
+      attempted: false
+    },
+    timeline: {
+      attempted: false,
+      placements: {}
+    },
+    resources: {
+      planningTemplateDownloaded: false
+    }
+  };
 
-  // -------- SCORM helpers --------
+  // ---------------- SCORM ----------------
 
   function initSCORM() {
     try {
       LMSInitialize();
+
       var status = LMSGetValue("cmi.core.lesson_status") || "";
       if (!status || String(status).toLowerCase() === "not attempted") {
         LMSSetValue("cmi.core.lesson_status", "incomplete");
       }
+
+      loadAnalytics();
       LMSCommit();
-    } catch (e) {}
+    } catch (e) {
+      // Course still works when opened outside an LMS.
+    }
   }
 
   function saveAnalytics() {
     try {
-      var payload = {
-        tfAttempts: tfAttempts,
-        orderAttempts: orderAttempts,
-        matchAttempts: matchAttempts,
-        exitVideoMaxProgress: exitVideoMaxProgress,
-        exitVideoMaxSeconds: exitVideoMaxSeconds
-      };
-      LMSSetValue("cmi.suspend_data", JSON.stringify(payload));
+      LMSSetValue("cmi.suspend_data", JSON.stringify(analytics));
       LMSCommit();
     } catch (e) {}
   }
@@ -59,60 +86,28 @@
     try {
       var raw = LMSGetValue("cmi.suspend_data");
       if (!raw) return;
-      var data = JSON.parse(raw);
-      if (!data || typeof data !== "object") return;
 
-      tfAttempts = Number(data.tfAttempts) || 0;
-      orderAttempts = Number(data.orderAttempts) || 0;
-      matchAttempts = Number(data.matchAttempts) || 0;
-      exitVideoMaxProgress = Number(data.exitVideoMaxProgress) || 0;
-      exitVideoMaxSeconds = Number(data.exitVideoMaxSeconds) || 0;
+      var saved = JSON.parse(raw);
+      if (!saved || typeof saved !== "object") return;
+
+      // Merge saved top-level sections without assuming every old field exists.
+      Object.keys(analytics).forEach(function (key) {
+        if (saved[key] === undefined) return;
+        if (
+          analytics[key] &&
+          typeof analytics[key] === "object" &&
+          !Array.isArray(analytics[key]) &&
+          saved[key] &&
+          typeof saved[key] === "object"
+        ) {
+          analytics[key] = Object.assign({}, analytics[key], saved[key]);
+        } else {
+          analytics[key] = saved[key];
+        }
+      });
     } catch (e) {
-      // ignore and keep defaults
+      // Ignore malformed or unavailable suspend_data.
     }
-  }
-
-  // Explicit finish action for last slide
-  function finishCourse() {
-    try {
-      var status = (LMSGetValue("cmi.core.lesson_status") || "").toLowerCase();
-      if (status !== "completed" && status !== "passed" && status !== "failed") {
-        LMSSetValue("cmi.core.lesson_status", "completed");
-      }
-      LMSCommit();
-      LMSFinish();
-    } catch (e) {}
-    // Simple UX message
-    alert("Course finished. You can now close this window.");
-  }
-
-  // -------- Navigation --------
-
-  var current = 0;
-
-  function showSlide(i) {
-    slides.forEach(function (s) {
-      s.classList.remove("active");
-    });
-    current = Math.max(0, Math.min(i, slides.length - 1));
-    slides[current].classList.add("active");
-
-    if (slideNum) slideNum.textContent = String(current + 1);
-    if (backBtn) backBtn.disabled = current === 0;
-
-    if (nextBtn) {
-      // On last slide, show "Finish", otherwise "Next"
-      if (current === slides.length - 1) {
-        nextBtn.textContent = "Finish";
-      } else {
-        nextBtn.textContent = "Next";
-      }
-    }
-
-    try {
-      LMSSetValue("cmi.core.lesson_location", String(current));
-      LMSCommit();
-    } catch (e) {}
   }
 
   function restoreLocation() {
@@ -124,435 +119,514 @@
     return 0;
   }
 
-  function guardNext() {
-    // index 2 (T/F) must be correct
-    if (current === 2 && !tfPassed) {
-      if (actMsg) {
-        actMsg.textContent = "Please answer correctly to continue.";
-        actMsg.className = "msg warn";
-      }
-      return false;
-    }
-    // index 4 (ordering) must be correct
-    if (current === 4 && !orderDone) {
-      var om = document.getElementById("orderMsg");
-      if (om) {
-        om.textContent = "Complete the ordering task before continuing.";
-        om.className = "msg warn";
-      }
-      return false;
-    }
-    // index 5 (matching) must be correct
-    if (current === 5 && !matchDone) {
-      var mm = document.getElementById("matchMsg");
-      if (mm) {
-        mm.textContent = "Complete the matching task before continuing.";
-        mm.className = "msg warn";
-      }
-      return false;
-    }
-    return true;
-  }
-
-  // -------- Quiz grading --------
-
-  function gradeQuiz() {
-    var form = document.getElementById("quizForm");
-    if (!form) return;
-    var sets = Array.from(form.querySelectorAll("fieldset"));
-    var correct = 0,
-      total = sets.length;
-
-    sets.forEach(function (fs) {
-      var chosen = fs.querySelector('input[type="radio"]:checked');
-      if (chosen && chosen.dataset && chosen.dataset.correct === "1") {
-        correct++;
-      }
-    });
-
-    var pct = total > 0 ? Math.round((correct / total) * 100) : 0;
-    var passed = pct >= 70;
-
-    if (quizMsg) {
-      quizMsg.textContent =
-        "You scored " +
-        pct +
-        "% (" +
-        correct +
-        " of " +
-        total +
-        "). " +
-        (passed ? "Status: PASSED" : "Status: FAILED");
-      quizMsg.className = "msg " + (passed ? "ok" : "warn");
-    }
-
+  function saveLocation() {
     try {
-      LMSSetValue("cmi.core.score.raw", String(pct));
-      LMSSetValue("cmi.core.score.max", "100");
-      LMSSetValue("cmi.core.lesson_status", passed ? "passed" : "failed");
+      LMSSetValue("cmi.core.lesson_location", String(current));
       LMSCommit();
     } catch (e) {}
   }
 
-  // -------- True/False gate --------
-
-  function initTrueFalseGate() {
-    var tfForm = document.getElementById("tfForm");
-    if (!tfForm) return;
-    tfForm.addEventListener("change", function () {
-      var chosen = tfForm.querySelector('input[name="tf1"]:checked');
-      if (!chosen) return;
-
-      tfAttempts++; // count every change/attempt
-
-      if (chosen.value === "false") {
-        // correct
-        tfPassed = true;
-        if (actMsg) {
-          actMsg.textContent = "Correct — you can continue.";
-          actMsg.className = "msg ok";
-        }
-      } else {
-        tfPassed = false;
-        if (actMsg) {
-          actMsg.textContent = "That is not correct. Try again.";
-          actMsg.className = "msg warn";
-        }
+  function completeCourse() {
+    try {
+      var status = (LMSGetValue("cmi.core.lesson_status") || "").toLowerCase();
+      if (status !== "completed" && status !== "passed") {
+        LMSSetValue("cmi.core.lesson_status", "completed");
       }
       saveAnalytics();
-    });
-  }
-
-  // -------- Flashcards --------
-
-  function initFlashcards() {
-    var flips = Array.from(document.querySelectorAll("[data-flip]"));
-    flips.forEach(function (el) {
-      el.addEventListener("click", function () {
-        el.classList.toggle("show");
-      });
-    });
-  }
-
-  // -------- Drag & drop (desktop) --------
-
-  function handleDragStart(e) {
-    dragged = e.target;
-    try {
-      if (e.dataTransfer) {
-        e.dataTransfer.effectAllowed = "move";
-      }
-    } catch (err) {}
-  }
-
-  function handleDragOver(e) {
-    try {
-      e.preventDefault();
-    } catch (err) {}
-    try {
-      this.classList.add("over");
-    } catch (err) {}
-    try {
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = "move";
-      }
-    } catch (err) {}
-  }
-
-  function handleDragLeave(e) {
-    try {
-      this.classList.remove("over");
-    } catch (err) {}
-  }
-
-  function handleDrop(e) {
-    try {
-      e.preventDefault();
-    } catch (err) {}
-    try {
-      this.classList.remove("over");
-    } catch (err) {}
-    if (!dragged) return;
-    try {
-      this.appendChild(dragged);
-    } catch (err) {}
-    dragged = null;
-  }
-
-  function makeDropzone(el) {
-    el.classList.add("dropzone");
-    el.addEventListener("dragover", handleDragOver);
-    el.addEventListener("dragleave", handleDragLeave);
-    el.addEventListener("drop", handleDrop);
-  }
-
-  // -------- Tap-to-move (mobile + desktop fallback) --------
-
-  function handleTileClick(e) {
-    e.stopPropagation();
-    var tile = e.currentTarget;
-
-    if (selectedTile === tile) {
-      // Deselect if tapping again
-      tile.classList.remove("selected");
-      selectedTile = null;
-      return;
-    }
-
-    if (selectedTile) {
-      selectedTile.classList.remove("selected");
-    }
-
-    selectedTile = tile;
-    tile.classList.add("selected");
-  }
-
-  function handleZoneClick(e) {
-    e.stopPropagation();
-    if (!selectedTile) return;
-    var zone = e.currentTarget;
-    try {
-      zone.appendChild(selectedTile);
-    } catch (err) {}
-    selectedTile.classList.remove("selected");
-    selectedTile = null;
-  }
-
-  function initTapToMove() {
-    var tiles = Array.from(document.querySelectorAll(".draggable"));
-    var zones = Array.from(document.querySelectorAll(".dropzone"));
-
-    tiles.forEach(function (t) {
-      t.addEventListener("click", handleTileClick);
-    });
-    zones.forEach(function (z) {
-      z.addEventListener("click", handleZoneClick);
-    });
-  }
-
-  // -------- Ordering activity --------
-
-  function initOrdering() {
-    var bank = document.getElementById("order-bank");
-    if (bank) makeDropzone(bank);
-
-    Array.from(document.querySelectorAll("[data-slot]")).forEach(makeDropzone);
-
-    Array.from(document.querySelectorAll("#order-bank .draggable")).forEach(
-      function (el) {
-        el.addEventListener("dragstart", handleDragStart);
-      }
-    );
-
-    var btn = document.getElementById("checkOrder");
-    if (btn) {
-      btn.addEventListener("click", function () {
-        orderAttempts++;
-
-        var seq = [1, 2, 3, 4, 5, 6].map(function (n) {
-          var z = document.querySelector('[data-slot="' + n + '"]');
-          var child = z ? z.querySelector(".draggable") : null;
-          return child ? child.textContent.trim() : "";
-        });
-
-        var correct = [
-          "Description",
-          "Feelings",
-          "Evaluation",
-          "Analysis",
-          "Conclusion",
-          "Action Plan"
-        ];
-        var ok = JSON.stringify(seq) === JSON.stringify(correct);
-        var m = document.getElementById("orderMsg");
-        if (m) {
-          m.textContent = ok
-            ? "Correct order — well done!"
-            : "Not quite. You can tap or drag tiles between slots or back to the bank and try again.";
-          m.className = "msg " + (ok ? "ok" : "warn");
-        }
-        orderDone = ok;
-        saveAnalytics();
-      });
-    }
-
-    // Shuffle bank tiles for variety
-    try {
-      var tiles = Array.from(
-        document.querySelectorAll("#order-bank .draggable")
-      );
-      for (var i = tiles.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        bank.appendChild(tiles[j]);
-        tiles = Array.from(
-          document.querySelectorAll("#order-bank .draggable")
-        );
-      }
+      LMSCommit();
     } catch (e) {}
   }
 
-  // -------- Matching activity --------
+  // ---------------- Navigation ----------------
 
-  function initMatching() {
-    Array.from(
-      document.querySelectorAll('section[data-slide="5"] .dropzone')
-    ).forEach(makeDropzone);
+  function showSlide(index) {
+    current = Math.max(0, Math.min(index, slides.length - 1));
 
-    Array.from(document.querySelectorAll("#match-bank .draggable")).forEach(
-      function (el) {
-        el.addEventListener("dragstart", handleDragStart);
-      }
-    );
+    slides.forEach(function (slide, i) {
+      slide.classList.toggle("active", i === current);
+    });
 
-    // Randomise order of definition pairs
-    try {
-      var pairs = Array.from(
-        document.querySelectorAll('section[data-slide="5"] .pair')
-      );
-      if (pairs.length) {
-        var wrap = pairs[0].parentElement;
-        var shuffled = pairs.slice();
-        for (var i = shuffled.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var tmp = shuffled[i];
-          shuffled[i] = shuffled[j];
-          shuffled[j] = tmp;
-        }
-        shuffled.forEach(function (p) {
-          wrap.appendChild(p);
-        });
-      }
-    } catch (e) {}
-
-    var btn = document.getElementById("checkMatch");
-    if (btn) {
-      btn.addEventListener("click", function () {
-        matchAttempts++;
-
-        var zones = Array.from(document.querySelectorAll("[data-accept]"));
-        var total = zones.length,
-          correctCount = 0;
-
-        zones.forEach(function (z) {
-          var accept = z.getAttribute("data-accept");
-          var child = z.querySelector("[data-key]");
-          if (child && child.getAttribute("data-key") === accept) {
-            correctCount++;
-          }
-        });
-
-        var pct = Math.round((correctCount / total) * 100);
-        var m = document.getElementById("matchMsg");
-        if (m) {
-          m.textContent =
-            "You matched " +
-            correctCount +
-            " of " +
-            total +
-            " (" +
-            pct +
-            "%).";
-          m.className = "msg " + (correctCount === total ? "ok" : "warn");
-        }
-        matchDone = correctCount === total;
-        saveAnalytics();
-      });
+    if (slideNum) slideNum.textContent = String(current + 1);
+    if (slideCount) slideCount.textContent = String(slides.length);
+    if (progressLabel) progressLabel.textContent = (current + 1) + " of " + slides.length;
+    if (progressFill) {
+      progressFill.style.width = (((current + 1) / slides.length) * 100) + "%";
     }
+
+    if (backBtn) backBtn.disabled = current === 0;
+    if (nextBtn) nextBtn.style.visibility = current === slides.length - 1 ? "hidden" : "visible";
+
+    saveLocation();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  // -------- Quiz randomisation + exit video tracking --------
+  function initNavigation() {
+    if (slideCount) slideCount.textContent = String(slides.length);
 
-  function randomiseQuiz() {
-    // Completion + analytics on final video
-    try {
-      var exitVideo = document.getElementById("exitVideo");
-      if (exitVideo) {
-        exitVideo.addEventListener("timeupdate", function () {
-          if (!exitVideo.duration) return;
-
-          var prog = exitVideo.currentTime / exitVideo.duration;
-
-          // Track best progress and time watched
-          var updated = false;
-          if (prog > exitVideoMaxProgress) {
-            exitVideoMaxProgress = prog;
-            updated = true;
-          }
-          if (exitVideo.currentTime > exitVideoMaxSeconds) {
-            exitVideoMaxSeconds = exitVideo.currentTime;
-            updated = true;
-          }
-          if (updated) {
-            saveAnalytics();
-          }
-
-          // Keep the auto-complete behaviour as well (optional)
-          if (prog > 0.9) {
-            try {
-              var status =
-                (LMSGetValue("cmi.core.lesson_status") || "").toLowerCase();
-              if (status !== "completed" && status !== "passed") {
-                LMSSetValue("cmi.core.lesson_status", "completed");
-                LMSCommit();
-              }
-            } catch (e) {}
-          }
-        });
-      }
-    } catch (e) {}
-
-    // Randomise quiz question order
-    try {
-      var form = document.getElementById("quizForm");
-      if (!form) return;
-      var sets = Array.from(form.querySelectorAll("fieldset"));
-      for (var i = sets.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var tmp = sets[i];
-        sets[i] = sets[j];
-        sets[j] = tmp;
-      }
-      sets.forEach(function (fs) {
-        form.appendChild(fs);
-      });
-    } catch (e) {}
-  }
-
-  // -------- Init --------
-
-  function initAll() {
-    initSCORM();
-    loadAnalytics();
-
-    showSlide(restoreLocation());
-
-    // Navigation
-    if (backBtn)
+    if (backBtn) {
       backBtn.addEventListener("click", function () {
         showSlide(current - 1);
       });
+    }
 
-    if (nextBtn)
+    if (nextBtn) {
       nextBtn.addEventListener("click", function () {
-        // On last slide, "Finish" instead of going next
-        if (current === slides.length - 1) {
-          finishCourse();
-          return;
-        }
-        if (!guardNext()) return;
         showSlide(current + 1);
       });
+    }
+  }
 
-    // Interactions
-    initTrueFalseGate();
-    initFlashcards();
-    initOrdering();
-    initMatching();
-    if (submitQuiz) submitQuiz.addEventListener("click", gradeQuiz);
-    randomiseQuiz();
+  // ---------------- Slide 2: research-source reveals ----------------
 
-    // Enable tap-to-move after dropzones & tiles exist
-    initTapToMove();
+  function initSourceCards() {
+    document.querySelectorAll(".source-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btn.classList.toggle("open");
+      });
+    });
+  }
+
+  // ---------------- Slide 4: initial Principle 1 recall ----------------
+
+  function initInitialRecall() {
+    var btn = document.getElementById("revealP1");
+    var input = document.getElementById("principle1Recall");
+    var feedback = document.getElementById("p1Feedback");
+    if (!btn || !feedback) return;
+
+    btn.addEventListener("click", function () {
+      analytics.principle1InitialRecall.attempted =
+        !!(input && input.value.trim());
+      saveAnalytics();
+      feedback.classList.add("show");
+    });
+  }
+
+  // ---------------- Slide 5: retrieval vs re-exposure ----------------
+
+  function initReviewChoice() {
+    var choices = Array.from(document.querySelectorAll("#reviewChoices .choice"));
+    var feedback = document.getElementById("reviewFeedback");
+    var check = document.getElementById("checkReview");
+    if (!choices.length || !feedback || !check) return;
+
+    choices.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btn.classList.toggle("selected");
+      });
+    });
+
+    check.addEventListener("click", function () {
+      var selected = choices.filter(function (x) { return x.classList.contains("selected"); });
+      var keys = selected.map(function (x) { return x.dataset.key; }).sort().join(",");
+      analytics.reviewVsRetrieval.attempted = true;
+      if (analytics.reviewVsRetrieval.firstResponse === null) analytics.reviewVsRetrieval.firstResponse = keys;
+      analytics.reviewVsRetrieval.latestResponse = keys;
+      saveAnalytics();
+
+      var correct = selected.length === 2 && selected.every(function (x) { return x.dataset.answer === "retrieval"; });
+      if (correct) {
+        feedback.innerHTML = "<strong>Correct — C and D involve retrieval.</strong> In both cases, students must bring previous learning back to mind. A, B and E revisit previous learning through <strong>re-exposure</strong>: the information is provided to students again.";
+      } else {
+        feedback.innerHTML = "<strong>Not quite.</strong> Select the two options where students have to generate the previous learning from memory, rather than being shown or told it again.";
+      }
+      feedback.classList.add("show");
+    });
+  }
+
+  // ---------------- Generic drag + tap helpers ----------------
+
+  function handleDragStart(e) {
+    dragged = e.currentTarget;
+    try {
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragged.textContent.trim());
+      }
+    } catch (err) {}
+  }
+
+  function allowDrop(zone) {
+    zone.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      zone.style.borderColor = "var(--brand)";
+    });
+
+    zone.addEventListener("dragleave", function () {
+      zone.style.borderColor = "";
+    });
+
+    zone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      zone.style.borderColor = "";
+      if (!dragged) return;
+      zone.appendChild(dragged);
+      dragged = null;
+    });
+  }
+
+  // ---------------- Slide 6: retrieval / re-exposure sorter ----------------
+
+  function initRetrievalSort() {
+    var bank = document.getElementById("sortBank");
+    var retrievalTarget = document.getElementById("retrievalTarget");
+    var reexposureTarget = document.getElementById("reexposureTarget");
+    var placeRetrieval = document.getElementById("placeRetrieval");
+    var placeReexposure = document.getElementById("placeReexposure");
+    var check = document.getElementById("checkSort");
+    var feedback = document.getElementById("sortFeedback");
+
+    if (!bank || !retrievalTarget || !reexposureTarget) return;
+
+    var cards = Array.from(bank.querySelectorAll(".sort-card"));
+
+    // Randomise starting order so the intended categories do not alternate predictably.
+    for (var i = cards.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = cards[i];
+      cards[i] = cards[j];
+      cards[j] = tmp;
+    }
+    cards.forEach(function (card) {
+      bank.appendChild(card);
+      card.setAttribute("draggable", "true");
+      card.addEventListener("dragstart", handleDragStart);
+
+      card.addEventListener("click", function (e) {
+        e.stopPropagation();
+        document.querySelectorAll(
+          "#sortBank .sort-card, #retrievalTarget .sort-card, #reexposureTarget .sort-card"
+        ).forEach(function (x) { x.style.outline = ""; });
+
+        selectedSortCard = card;
+        card.style.outline = "3px solid var(--brand)";
+      });
+    });
+
+    [bank, retrievalTarget, reexposureTarget].forEach(allowDrop);
+
+    function moveSelected(target) {
+      if (!selectedSortCard) return;
+      selectedSortCard.style.outline = "";
+      target.appendChild(selectedSortCard);
+      selectedSortCard = null;
+    }
+
+    if (placeRetrieval) {
+      placeRetrieval.addEventListener("click", function () {
+        moveSelected(retrievalTarget);
+      });
+    }
+
+    if (placeReexposure) {
+      placeReexposure.addEventListener("click", function () {
+        moveSelected(reexposureTarget);
+      });
+    }
+
+    if (check && feedback) {
+      check.addEventListener("click", function () {
+        var placed = Array.from(
+          document.querySelectorAll("#retrievalTarget .sort-card, #reexposureTarget .sort-card")
+        );
+
+        if (placed.length < cards.length) {
+          feedback.textContent = "Place all eight examples before checking.";
+          feedback.classList.add("show");
+          return;
+        }
+
+        var correct = 0;
+        placed.forEach(function (card) {
+          var zone = card.parentElement.dataset.zone;
+          if (card.dataset.correct === zone) correct++;
+        });
+
+        analytics.retrievalSort.attempted = true;
+        analytics.retrievalSort.attempts += 1;
+        if (analytics.retrievalSort.firstScore === null) {
+          analytics.retrievalSort.firstScore = correct;
+        }
+        analytics.retrievalSort.bestScore =
+          Math.max(analytics.retrievalSort.bestScore || 0, correct);
+        saveAnalytics();
+
+        feedback.innerHTML =
+          "<strong>" + correct + "/8 placed as intended.</strong> " +
+          "The key distinction is whether students must generate the previous learning from memory, rather than encounter it again.";
+        feedback.classList.add("show");
+      });
+    }
+  }
+
+  // ---------------- Slide 7: pathway reveals ----------------
+
+  function initPathway() {
+    document.querySelectorAll(".mini-reveal").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btn.parentElement.classList.toggle("open");
+      });
+    });
+  }
+
+  // ---------------- Slides 8–9: memory retrieval experience ----------------
+
+  function initMemoryExperiment() {
+    var ready = document.getElementById("memoryReady");
+    var study = document.getElementById("memoryStudy");
+    var distractor = document.getElementById("memoryDistractor");
+    var timer = document.getElementById("distractTimer");
+    var recall = document.getElementById("memoryRecall");
+    var input = document.getElementById("memoryInput");
+    var done = document.getElementById("memoryDone");
+
+    if (ready && study && distractor && timer && recall) {
+      ready.addEventListener("click", function () {
+        study.style.display = "none";
+        distractor.style.display = "grid";
+
+        var n = 10;
+        timer.textContent = String(n);
+
+        var interval = setInterval(function () {
+          n -= 1;
+          timer.textContent = String(n);
+
+          if (n <= 0) {
+            clearInterval(interval);
+            distractor.style.display = "none";
+            recall.style.display = "block";
+          }
+        }, 1000);
+      });
+    }
+
+    if (done) {
+      done.addEventListener("click", function () {
+        analytics.memoryExperiment.attempted = true;
+        saveAnalytics();
+
+        // The learner's typed words are deliberately NOT sent to the LMS.
+        // They are used only locally to give the learner a private self-check.
+        try {
+          sessionStorage.setItem(
+            "retrievalMemoryRecall",
+            input ? input.value.trim() : ""
+          );
+        } catch (e) {}
+
+        showSlide(8);
+        updateRecallCount();
+      });
+    }
+  }
+
+  function updateRecallCount() {
+    var output = document.getElementById("recallCount");
+    if (!output) return;
+
+    var text = "";
+    try {
+      text = sessionStorage.getItem("retrievalMemoryRecall") || "";
+    } catch (e) {}
+
+    if (!text) {
+      output.textContent = "";
+      return;
+    }
+
+    var words = [
+      "river", "candle", "bicycle", "lemon", "window",
+      "tiger", "button", "guitar", "cloud", "key"
+    ];
+
+    var lower = text.toLowerCase();
+    var hit = words.filter(function (word) {
+      return new RegExp("\\b" + word + "\\b", "i").test(lower);
+    }).length;
+
+    output.textContent =
+      "You recalled " + hit +
+      " of the 10 words. This is not scored; the important part was the attempt to retrieve them.";
+  }
+
+  // ---------------- Slide 10: flip cards ----------------
+
+  function initFlipCards() {
+    document.querySelectorAll("[data-flip]").forEach(function (card) {
+      card.setAttribute("tabindex", "0");
+
+      function toggle() {
+        card.classList.toggle("show");
+      }
+
+      card.addEventListener("click", toggle);
+      card.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+  }
+
+  // ---------------- Slide 12: scenario comparison ----------------
+
+  function initScenario() {
+    var choices = Array.from(document.querySelectorAll("#scenarioChoices .choice"));
+    var feedback = document.getElementById("scenarioFeedback");
+    if (!choices.length || !feedback) return;
+
+    choices.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        choices.forEach(function (x) { x.classList.remove("selected"); });
+        btn.classList.add("selected");
+
+        var response = btn.dataset.answer || "";
+        analytics.scenarioComparison.attempted = true;
+        if (analytics.scenarioComparison.firstResponse === null) {
+          analytics.scenarioComparison.firstResponse = response;
+        }
+        analytics.scenarioComparison.latestResponse = response;
+        saveAnalytics();
+
+        if (response === "b") {
+          feedback.innerHTML =
+            "<strong>Teacher B provides the stronger retrieval opportunity.</strong> " +
+            "Students first have to generate the key ideas from memory, then receive feedback by comparing their recall with the summary.";
+        } else {
+          feedback.innerHTML =
+            "<strong>Teacher A provides review through re-exposure.</strong> " +
+            "Students encounter the information again, but they are not required to retrieve it first.";
+        }
+        feedback.classList.add("show");
+      });
+    });
+  }
+
+  // ---------------- Slide 13: delayed Principle 1 recall ----------------
+
+  function initDelayedRecall() {
+    var btn = document.getElementById("revealP1Again");
+    var input = document.getElementById("p1Again");
+    var feedback = document.getElementById("p1AgainFeedback");
+    if (!btn || !feedback) return;
+
+    btn.addEventListener("click", function () {
+      analytics.principle1DelayedRecall.attempted =
+        !!(input && input.value.trim());
+      saveAnalytics();
+      feedback.classList.add("show");
+    });
+  }
+
+  // ---------------- Slide 14: retrieval timeline ----------------
+
+  function initTimeline() {
+    var bank = document.getElementById("timelineBank");
+    var boxes = Array.from(document.querySelectorAll(".timebox"));
+    if (!bank || !boxes.length) return;
+
+    function selectItem(item) {
+      document.querySelectorAll(".time-source, .timeitem").forEach(function (x) {
+        x.style.outline = "";
+      });
+      selectedTimelineItem = item;
+      item.style.outline = "3px solid var(--brand)";
+    }
+
+    Array.from(bank.querySelectorAll(".time-source")).forEach(function (item) {
+      item.setAttribute("draggable", "true");
+      item.addEventListener("dragstart", handleDragStart);
+      item.addEventListener("click", function (e) {
+        e.stopPropagation();
+        selectItem(item);
+      });
+    });
+
+    allowDrop(bank);
+    boxes.forEach(function (box) {
+      allowDrop(box);
+
+      box.addEventListener("click", function () {
+        if (!selectedTimelineItem) return;
+        selectedTimelineItem.style.outline = "";
+        box.appendChild(selectedTimelineItem);
+        selectedTimelineItem = null;
+        recordTimeline();
+      });
+
+      box.addEventListener("drop", function () {
+        setTimeout(recordTimeline, 0);
+      });
+    });
+
+    function recordTimeline() {
+      var placements = {};
+      boxes.forEach(function (box) {
+        placements[box.dataset.time] =
+          Array.from(box.querySelectorAll(".time-source, .timeitem"))
+            .map(function (item) { return item.textContent.trim(); });
+      });
+
+      analytics.timeline.attempted =
+        Object.keys(placements).some(function (key) {
+          return placements[key].length > 0;
+        });
+      analytics.timeline.placements = placements;
+      saveAnalytics();
+    }
+  }
+
+  // ---------------- Slide 15: resource + completion ----------------
+
+  function initCompletion() {
+    var download = document.getElementById("downloadTemplate");
+    var complete = document.getElementById("completeCourse");
+    var feedback = document.getElementById("completeFeedback");
+
+    if (download) {
+      download.addEventListener("click", function () {
+        var a = document.createElement("a");
+        a.href = "Retrieval-Planning-Template.docx";
+        a.download = "Retrieval-Planning-Template.docx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        analytics.resources.planningTemplateDownloaded = true;
+        saveAnalytics();
+      });
+    }
+
+    if (complete) {
+      complete.addEventListener("click", function () {
+        completeCourse();
+        if (feedback) feedback.classList.add("show");
+      });
+    }
+  }
+
+  // ---------------- Init ----------------
+
+  function initAll() {
+    initSCORM();
+    initNavigation();
+
+    initSourceCards();
+    initInitialRecall();
+    initReviewChoice();
+    initRetrievalSort();
+    initPathway();
+    initMemoryExperiment();
+    initFlipCards();
+    initScenario();
+    initDelayedRecall();
+    initTimeline();
+    initCompletion();
+
+    current = restoreLocation();
+    showSlide(current);
+    updateRecallCount();
   }
 
   if (document.readyState === "loading") {
