@@ -1,0 +1,1394 @@
+*{box-sizing:border-box}
+
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#475569;
+      --brand:#1f5f8b;
+      --brand-dark:#17486a;
+      --brand-soft:#eaf3f9;
+      --brand-pale:#f3f8fb;
+      --ok:#167348;
+      --warn:#9a6700;
+      --border:#dbe4ea;
+      --shadow:0 8px 24px rgba(15,23,42,.07);
+      --radius:20px;
+      --max:1100px;
+    }
+
+    html,body{height:100%}
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      line-height:1.7;
+      font-size:28px;
+    }
+
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+
+    .wrap{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:0 24px;
+    }
+
+    /* Header */
+    .app-header{
+      background:linear-gradient(135deg,#edf5fa 0%,#dcecf5 100%);
+      border-bottom:1px solid var(--border);
+      padding:20px 0;
+    }
+
+    .header-inner{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:28px;
+      min-height:150px;
+    }
+
+    .brand-lockup{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      flex:1;
+    }
+
+    .logo-box{
+      display:none;
+    }
+
+    .gbs-logo{
+      height:138px;
+      width:auto;
+      border-radius:8px;
+      flex:0 0 auto;
+      box-shadow:0 3px 12px rgba(15,23,42,.08);
+    }
+
+    .app-header h1{
+      font-size:44px;
+      line-height:1.15;
+      margin:0 0 8px;
+      letter-spacing:-.02em;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:24px;
+    }
+
+    .progress-wrap{
+      width:230px;
+      flex:0 0 230px;
+    }
+
+    .progress-text{
+      font-size:20px;
+      color:var(--muted);
+      text-align:right;
+      margin-bottom:8px;
+    }
+
+    .progress-bar{
+      height:12px;
+      background:#dbe4ea;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .progress-fill{
+      height:100%;
+      width:0;
+      background:var(--brand);
+      transition:width .25s ease;
+    }
+
+    /* Main card & slides */
+    main{padding:20px 0 28px}
+
+    .course-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      margin:20px 0;
+      padding:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .slide{
+      display:none;
+      min-height:560px;
+      padding:16px 18px 26px;
+    }
+
+    .slide.active{
+      display:block;
+      animation:fade .2s ease-in;
+    }
+
+    h2{
+      font-size:34px;
+      line-height:1.2;
+      margin:0 0 12px;
+    }
+
+    h3{
+      font-size:30px;
+      line-height:1.25;
+      margin:26px 0 10px;
+    }
+
+    p,li,label,legend{
+      font-size:28px;
+    }
+
+    p{margin:12px 0}
+    ul,ol{margin-top:10px}
+    li{margin:6px 0}
+
+    .lead{
+      font-size:31px;
+      line-height:1.45;
+      max-width:900px;
+      color:#1e293b;
+    }
+
+    .small{
+      font-size:22px;
+      color:var(--muted);
+    }
+
+    .eyebrow{
+      font-size:19px;
+      font-weight:800;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:var(--brand);
+      margin-bottom:10px;
+    }
+
+    .callout{
+      border-left:6px solid var(--brand);
+      background:var(--brand-soft);
+      padding:18px 22px;
+      border-radius:14px;
+      margin:24px 0;
+      font-size:27px;
+    }
+
+    .quote{
+      font-size:34px;
+      line-height:1.35;
+      font-weight:700;
+      color:#163d59;
+      margin:22px 0;
+    }
+
+    /* Generic cards / grids */
+    .grid{display:grid;gap:18px}
+    .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+
+    .card-lite{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      background:#fff;
+    }
+
+    .card-lite strong{font-size:27px}
+
+    .principle{
+      min-height:180px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      font-size:22px;
+      line-height:1.45;
+    }
+
+    .principle .num{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      background:#edf2f7;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      flex:0 0 auto;
+      font-size:22px;
+    }
+
+    .principle.focus{
+      border:2px solid var(--brand);
+      background:var(--brand-soft);
+    }
+
+    .principle.focus .num{
+      background:var(--brand);
+      color:#fff;
+    }
+
+    .principle.secondary{
+      border:2px dashed var(--brand);
+      background:#fbfdff;
+    }
+
+    /* Buttons */
+    .btn{
+      font-size:24px;
+      padding:10px 16px;
+      border-radius:10px;
+      border:1px solid var(--brand);
+      background:var(--brand);
+      color:#fff;
+      cursor:pointer;
+      transition:transform .05s ease,background .2s ease;
+      font-weight:700;
+    }
+
+    .btn:hover{background:var(--brand-dark)}
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    .btn.secondary{
+      background:#fff;
+      color:var(--brand);
+      border:1px solid var(--brand);
+    }
+
+    .btn.ghost{
+      background:#fff;
+      color:var(--brand);
+      border:1px solid var(--brand);
+    }
+
+    /* Forms & feedback */
+    textarea{
+      width:100%;
+      min-height:150px;
+      font-size:22px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      resize:vertical;
+      background:#fff;
+    }
+
+    .feedback{
+      margin-top:14px;
+      padding:16px 18px;
+      border-radius:12px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      display:none;
+      font-size:24px;
+    }
+
+    .feedback.show{display:block}
+
+    /* Rosenshine research source cards */
+    .three-sources{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+      margin-top:28px;
+    }
+
+    .source-btn{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:20px;
+      text-align:left;
+      min-height:190px;
+      font-size:24px;
+      color:var(--text);
+    }
+
+    .source-btn strong{font-size:27px}
+
+    .source-btn.open{
+      background:var(--brand-soft);
+      border-color:var(--brand);
+    }
+
+    .source-btn .detail{
+      display:none;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:21px;
+    }
+
+    .source-btn.open .detail{display:block}
+
+    /* Choices */
+    .choice-grid{
+      display:grid;
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .choice{
+      width:100%;
+      text-align:left;
+      background:#fff;
+      border:2px solid var(--border);
+      border-radius:14px;
+      padding:18px;
+      color:var(--text);
+      font-size:25px;
+    }
+
+    .choice:hover,.choice:focus{border-color:var(--brand)}
+    .choice.selected{
+      border-color:var(--brand);
+      background:var(--brand-soft);
+    }
+
+    /* Sort activity */
+    .sort-bank,.sort-target{
+      border:2px dashed #b8c6d1;
+      border-radius:12px;
+      padding:14px;
+      min-height:110px;
+      background:#f8fafc;
+    }
+
+    .sort-card{
+      display:block;
+      width:100%;
+      text-align:left;
+      margin:8px 0;
+      padding:12px 14px;
+      border:1px solid var(--brand);
+      border-radius:10px;
+      background:#eef6fb;
+      cursor:pointer;
+      color:var(--text);
+      font-size:22px;
+    }
+
+    .sort-card:hover{border-color:var(--brand-dark)}
+    .sort-target h4{margin:0 0 10px;font-size:26px}
+    .sort-target .sort-card{background:#e4f1f8}
+
+    .sort-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    /* Pathway */
+    .pathway{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-top:28px;
+    }
+
+    .path-step{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      background:#fff;
+      min-height:190px;
+      font-size:24px;
+    }
+
+    .path-step button{margin-top:10px}
+
+    .path-detail{
+      display:none;
+      margin-top:10px;
+      color:var(--muted);
+      font-size:20px;
+    }
+
+    .path-step.open{
+      background:var(--brand-soft);
+      border-color:var(--brand);
+    }
+
+    .path-step.open .path-detail{display:block}
+
+    /* Memory activity */
+    .memory-list{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:12px;
+      margin:22px 0;
+    }
+
+    .memory-word{
+      padding:20px 10px;
+      text-align:center;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      font-size:27px;
+      font-weight:700;
+    }
+
+    .memory-hidden{
+      min-height:210px;
+      display:grid;
+      place-items:center;
+      border:2px dashed #b8c6d1;
+      border-radius:14px;
+      background:#f8fafc;
+      padding:20px;
+      text-align:center;
+    }
+
+    .countdown{
+      font-size:56px;
+      font-weight:800;
+      color:var(--brand);
+    }
+
+    /* Flip cards */
+    .flip{
+      height:240px;
+      perspective:1000px;
+      border:0;
+    }
+
+    .flip-inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      transform-style:preserve-3d;
+      transition:transform .6s;
+      will-change:transform;
+    }
+
+    .flip-face{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:18px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:var(--card);
+      backface-visibility:hidden;
+      box-sizing:border-box;
+    }
+
+    .flip-front strong{font-size:28px}
+    .flip-front .small{margin-top:8px}
+
+    .flip-back{
+      transform:rotateY(180deg);
+      overflow-y:auto;
+      overflow-wrap:anywhere;
+      background:var(--brand-soft);
+      align-items:flex-start;
+      text-align:left;
+      font-size:.82em;
+      line-height:1.4;
+    }
+
+    .flip-back strong{font-size:25px}
+    .flip-back p{font-size:21px;margin:6px 0}
+    .flip.show .flip-inner{transform:rotateY(180deg)}
+
+    /* Effective retrieval criteria */
+    .design-checks{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .design-check{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:18px;
+      background:#fff;
+      font-size:22px;
+    }
+
+    .design-check strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:26px;
+      color:#163d59;
+    }
+
+    /* Timeline */
+    .timeline{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+      margin-top:24px;
+    }
+
+    .timebox{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      background:#fff;
+      min-height:180px;
+    }
+
+    .timebox h4{
+      margin:0 0 8px;
+      font-size:23px;
+    }
+
+    .timeitem{
+      border:1px solid var(--brand);
+      background:var(--brand-soft);
+      padding:10px;
+      border-radius:9px;
+      margin:8px 0;
+      font-size:18px;
+      cursor:pointer;
+    }
+
+    /* Completion */
+    .complete-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:28px;
+    }
+
+    .checklist{font-size:25px}
+    .checklist li{margin-bottom:8px}
+
+    /* Footer / navigation */
+    .footer{
+      background:linear-gradient(135deg,#eef2f7 0%,#e6f0f7 100%);
+      border-top:1px solid var(--border);
+      padding:14px 0;
+      margin-top:10px;
+    }
+
+    .footer-inner{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:0 24px;
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:center;
+    }
+
+    #navStatus{
+      min-width:240px;
+      text-align:center;
+      font-size:22px;
+      color:var(--muted);
+    }
+
+    @keyframes fade{
+      from{opacity:.6;transform:translateY(2px)}
+      to{opacity:1;transform:none}
+    }
+
+    /* Responsive */
+    @media(max-width:900px){
+      .cols-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .cols-5{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .three-sources{grid-template-columns:1fr}
+      .pathway{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .timeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .design-checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .progress-wrap{display:none}
+      .gbs-logo{height:110px}
+    }
+
+    @media(max-width:768px){
+      body{font-size:18px}
+      .header-inner{min-height:110px}
+      .app-header h1{font-size:28px}
+      h2{font-size:24px}
+      h3{font-size:22px}
+      p,li,label,legend{font-size:18px}
+      .lead{font-size:21px}
+      .small{font-size:16px}
+      .eyebrow{font-size:14px}
+      .callout{font-size:18px}
+      .quote{font-size:23px}
+      .btn{font-size:18px;padding:8px 14px}
+      .course-card{padding:18px;margin:16px 0}
+      .slide{min-height:auto;padding:10px 6px 20px}
+      .gbs-logo{height:90px}
+      .principle{min-height:130px;font-size:17px}
+      .source-btn,.choice,.path-step{font-size:18px}
+      .source-btn strong,.card-lite strong{font-size:20px}
+      .source-btn .detail,.path-detail{font-size:16px}
+      textarea{font-size:18px}
+      .feedback{font-size:18px}
+      .design-check{font-size:17px}
+      .design-check strong{font-size:20px}
+      #navStatus{font-size:16px;min-width:auto}
+    }
+
+    @media(max-width:480px){
+      body{font-size:16px}
+      .wrap{padding:0 16px}
+      .header-inner{align-items:flex-start;min-height:auto}
+      .brand-lockup{align-items:flex-start}
+      .gbs-logo{height:72px}
+      .app-header h1{font-size:24px}
+      .subtitle{font-size:15px}
+      h2{font-size:20px}
+      p,li,label,legend{font-size:16px}
+      .lead{font-size:18px}
+      .small{font-size:14px}
+      .course-card{padding:16px;margin:14px 0}
+      .cols-2,.cols-3,.cols-5,.design-checks,.pathway,.timeline{grid-template-columns:1fr}
+      .memory-list{grid-template-columns:repeat(2,1fr)}
+      .flip{height:auto;min-height:190px}
+      .flip-inner{height:190px}
+      .footer-inner{flex-direction:column;gap:8px}
+      .footer-inner .btn{width:100%}
+    }
+
+/* ============================================================
+   Responsive refinement v4
+   Goal:
+   - ordinary desktop/laptop slides fit cleanly in one viewport where practical
+   - short laptop screens compact vertically
+   - mobile remains readable and may scroll vertically
+   ============================================================ */
+
+/* Fluid desktop typography */
+body{
+  font-size:clamp(17px,1.28vw,22px);
+}
+
+.app-header h1{
+  font-size:clamp(28px,2.55vw,40px);
+}
+
+.subtitle{
+  font-size:clamp(16px,1.35vw,21px);
+}
+
+h2{
+  font-size:clamp(27px,2.15vw,34px);
+}
+
+h3{
+  font-size:clamp(22px,1.75vw,29px);
+}
+
+p,li,label,legend{
+  font-size:clamp(17px,1.28vw,22px);
+}
+
+.lead{
+  font-size:clamp(21px,1.75vw,28px);
+}
+
+.small{
+  font-size:clamp(14px,1.05vw,18px);
+}
+
+.eyebrow{
+  font-size:clamp(13px,.95vw,16px);
+}
+
+.callout{
+  font-size:clamp(18px,1.35vw,23px);
+  padding:14px 18px;
+  margin:18px 0;
+}
+
+.quote{
+  font-size:clamp(24px,1.9vw,31px);
+}
+
+/* More efficient overall vertical footprint */
+.app-header{
+  padding:10px 0;
+}
+
+.header-inner{
+  min-height:100px;
+}
+
+.gbs-logo{
+  height:92px;
+}
+
+main{
+  padding:8px 0 12px;
+}
+
+.course-card{
+  margin:8px 0;
+  padding:18px 22px;
+}
+
+.slide{
+  min-height:0;
+  padding:8px 18px 16px;
+}
+
+.footer{
+  padding:9px 0;
+  margin-top:4px;
+}
+
+.footer-inner{
+  padding:0 24px;
+}
+
+.btn{
+  font-size:clamp(17px,1.2vw,21px);
+  padding:8px 14px;
+}
+
+#navStatus{
+  font-size:clamp(15px,1.1vw,19px);
+}
+
+/* Cards scale with the viewport rather than inheriting oversized body type */
+.card-lite strong{
+  font-size:clamp(18px,1.35vw,23px);
+}
+
+.principle{
+  min-height:145px;
+  font-size:clamp(15px,1.05vw,18px);
+}
+
+.principle .num{
+  width:34px;
+  height:34px;
+  font-size:17px;
+}
+
+.source-btn{
+  min-height:155px;
+  font-size:clamp(17px,1.15vw,20px);
+}
+
+.source-btn strong{
+  font-size:clamp(19px,1.35vw,23px);
+}
+
+.source-btn .detail{
+  font-size:clamp(15px,1.05vw,18px);
+}
+
+.choice{
+  font-size:clamp(17px,1.2vw,21px);
+  padding:14px 16px;
+}
+
+.feedback{
+  font-size:clamp(16px,1.15vw,20px);
+  padding:13px 16px;
+}
+
+textarea{
+  min-height:110px;
+  font-size:clamp(16px,1.15vw,20px);
+}
+
+.sort-card{
+  font-size:clamp(16px,1.05vw,19px);
+  padding:9px 12px;
+}
+
+.sort-target{
+  min-height:90px;
+}
+
+.sort-target h4{
+  font-size:clamp(19px,1.35vw,23px);
+}
+
+.path-step{
+  min-height:145px;
+  font-size:clamp(17px,1.15vw,20px);
+  padding:14px;
+}
+
+.path-detail{
+  font-size:clamp(15px,1vw,17px);
+}
+
+.memory-word{
+  font-size:clamp(19px,1.45vw,24px);
+  padding:13px 8px;
+}
+
+.memory-hidden{
+  min-height:160px;
+}
+
+.countdown{
+  font-size:46px;
+}
+
+/* ------------------------------------------------------------
+   Flip cards: key fix for Page 10
+   The title and explanation are explicitly stacked vertically.
+   No internal scrollbar on normal laptop/desktop sizes.
+   ------------------------------------------------------------ */
+.flip{
+  height:190px;
+  min-width:0;
+}
+
+.flip-inner,
+.flip-face{
+  min-width:0;
+}
+
+.flip-face{
+  padding:16px 18px;
+}
+
+.flip-front{
+  flex-direction:column;
+  gap:7px;
+}
+
+.flip-front strong{
+  display:block;
+  width:100%;
+  font-size:clamp(20px,1.5vw,25px);
+  line-height:1.2;
+  overflow-wrap:normal;
+  word-break:normal;
+  hyphens:none;
+}
+
+.flip-back{
+  flex-direction:column;
+  justify-content:flex-start;
+  align-items:flex-start;
+  text-align:left;
+  overflow:hidden;
+  font-size:inherit;
+  line-height:1.4;
+}
+
+.flip-back strong{
+  display:block;
+  width:100%;
+  flex:0 0 auto;
+  font-size:clamp(18px,1.3vw,22px);
+  line-height:1.2;
+  margin:0 0 8px;
+  overflow-wrap:normal;
+  word-break:normal;
+  hyphens:none;
+}
+
+.flip-back p{
+  display:block;
+  width:100%;
+  flex:0 0 auto;
+  font-size:clamp(15px,1.05vw,18px);
+  line-height:1.42;
+  margin:0;
+  overflow-wrap:normal;
+  word-break:normal;
+  hyphens:none;
+}
+
+.design-checks{
+  gap:12px;
+}
+
+.design-check{
+  font-size:clamp(15px,1.05vw,18px);
+  padding:13px 15px;
+}
+
+.design-check strong{
+  font-size:clamp(18px,1.3vw,22px);
+}
+
+.timeline{
+  gap:8px;
+  margin-top:16px;
+}
+
+.timebox{
+  min-height:135px;
+  padding:10px;
+}
+
+.timebox h4{
+  font-size:clamp(17px,1.2vw,20px);
+}
+
+.timeitem{
+  font-size:clamp(14px,.95vw,16px);
+}
+
+.checklist{
+  font-size:inherit;
+}
+
+/* Short laptop screens: compact vertically without turning into mobile */
+@media (min-width:769px) and (max-height:820px){
+  .app-header{
+    padding:6px 0;
+  }
+
+  .header-inner{
+    min-height:78px;
+  }
+
+  .gbs-logo{
+    height:72px;
+  }
+
+  .app-header h1{
+    font-size:30px;
+    margin-bottom:2px;
+  }
+
+  .subtitle{
+    font-size:16px;
+  }
+
+  .progress-text{
+    font-size:15px;
+    margin-bottom:4px;
+  }
+
+  .progress-bar{
+    height:8px;
+  }
+
+  main{
+    padding:4px 0 7px;
+  }
+
+  .course-card{
+    margin:5px 0;
+    padding:13px 20px;
+  }
+
+  .slide{
+    padding:4px 14px 10px;
+  }
+
+  h2{
+    font-size:29px;
+    margin-bottom:8px;
+  }
+
+  h3{
+    font-size:23px;
+    margin:17px 0 7px;
+  }
+
+  p,li,label,legend{
+    font-size:18px;
+  }
+
+  p{
+    margin:7px 0;
+  }
+
+  li{
+    margin:3px 0;
+  }
+
+  .lead{
+    font-size:22px;
+  }
+
+  .callout{
+    font-size:18px;
+    padding:10px 15px;
+    margin:12px 0;
+  }
+
+  .quote{
+    font-size:25px;
+    margin:13px 0;
+  }
+
+  .grid{
+    gap:12px;
+  }
+
+  .flip{
+    height:170px;
+  }
+
+  .flip-face{
+    padding:13px 15px;
+  }
+
+  .flip-front strong{
+    font-size:21px;
+  }
+
+  .flip-back strong{
+    font-size:18px;
+    margin-bottom:6px;
+  }
+
+  .flip-back p{
+    font-size:15px;
+    line-height:1.35;
+  }
+
+  .memory-list{
+    margin:13px 0;
+    gap:8px;
+  }
+
+  .memory-word{
+    padding:9px 6px;
+    font-size:19px;
+  }
+
+  .design-check{
+    padding:10px 12px;
+  }
+
+  .pathway{
+    margin-top:16px;
+    gap:10px;
+  }
+
+  .path-step{
+    min-height:125px;
+    padding:11px;
+  }
+
+  .footer{
+    padding:6px 0;
+  }
+
+  .btn{
+    font-size:17px;
+    padding:6px 12px;
+  }
+
+  #navStatus{
+    font-size:16px;
+  }
+}
+
+/* Very short desktop/laptop screens */
+@media (min-width:769px) and (max-height:680px){
+  .header-inner{
+    min-height:62px;
+  }
+
+  .gbs-logo{
+    height:58px;
+  }
+
+  .app-header h1{
+    font-size:26px;
+  }
+
+  .subtitle{
+    display:none;
+  }
+
+  h2{
+    font-size:25px;
+  }
+
+  p,li,label,legend{
+    font-size:16px;
+  }
+
+  .callout{
+    font-size:16px;
+    margin:8px 0;
+    padding:8px 12px;
+  }
+
+  .flip{
+    height:145px;
+  }
+
+  .flip-front strong{
+    font-size:18px;
+  }
+
+  .flip-back strong{
+    font-size:16px;
+  }
+
+  .flip-back p{
+    font-size:13.5px;
+    line-height:1.3;
+  }
+}
+
+/* Tablet: reflow rather than over-shrink */
+@media (max-width:900px){
+  .gbs-logo{
+    height:78px;
+  }
+
+  .cols-3{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .cols-5{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .three-sources{
+    grid-template-columns:1fr;
+  }
+
+  .pathway{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .timeline{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .design-checks{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .progress-wrap{
+    display:none;
+  }
+
+  .flip{
+    height:205px;
+  }
+}
+
+/* Phone: prioritise readability; vertical scrolling is intentional */
+@media (max-width:600px){
+  body{
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  .wrap{
+    padding:0 14px;
+  }
+
+  .app-header{
+    padding:8px 0;
+  }
+
+  .header-inner{
+    min-height:auto;
+    align-items:flex-start;
+  }
+
+  .brand-lockup{
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .gbs-logo{
+    height:62px;
+  }
+
+  .app-header h1{
+    font-size:22px;
+    line-height:1.15;
+    margin:2px 0 3px;
+  }
+
+  .subtitle{
+    font-size:14px;
+    line-height:1.3;
+  }
+
+  main{
+    padding:5px 0 8px;
+  }
+
+  .course-card{
+    padding:13px;
+    margin:7px 0;
+    border-radius:15px;
+  }
+
+  .slide{
+    padding:5px 2px 12px;
+  }
+
+  h2{
+    font-size:23px;
+  }
+
+  h3{
+    font-size:20px;
+  }
+
+  p,li,label,legend{
+    font-size:16px;
+  }
+
+  .lead{
+    font-size:18px;
+  }
+
+  .small{
+    font-size:14px;
+  }
+
+  .eyebrow{
+    font-size:12px;
+  }
+
+  .callout{
+    font-size:16px;
+    padding:10px 12px;
+    margin:12px 0;
+  }
+
+  .quote{
+    font-size:21px;
+  }
+
+  .cols-2,
+  .cols-3,
+  .cols-5,
+  .design-checks,
+  .pathway,
+  .timeline{
+    grid-template-columns:1fr;
+  }
+
+  .principle{
+    min-height:auto;
+  }
+
+  .flip{
+    height:185px;
+  }
+
+  .flip-front strong{
+    font-size:21px;
+  }
+
+  .flip-back strong{
+    font-size:18px;
+  }
+
+  .flip-back p{
+    font-size:15px;
+  }
+
+  .memory-list{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .footer-inner{
+    padding:0 14px;
+    gap:8px;
+  }
+
+  #navStatus{
+    min-width:110px;
+    font-size:14px;
+  }
+
+  .btn{
+    font-size:16px;
+    padding:7px 11px;
+  }
+}
+
+/* V5 coordinated refinements */
+.course-card{background:#1b2955;color:#fff;border-color:#243767}
+.slide{color:#fff}
+.slide h2,.slide h3,.slide h4,.slide .lead,.slide .small{color:#fff}
+.slide .eyebrow{color:#b9dcf2}
+.slide .callout,.slide .card-lite,.slide .source-btn,.slide .feedback,.slide textarea,.slide .choice,.slide .sort-target,.slide .sort-bank,.slide .memory-word,.slide .path-step,.slide .timebox{color:var(--ink)}
+.slide .callout .small,.slide .card-lite .small,.slide .source-btn .small,.slide .feedback .small{color:var(--muted)}
+.three-sources .source-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.three-sources .source-btn .detail{text-align:center}
+.scene-copy{text-align:left}
+.principles-list{margin:18px 0 8px;padding-left:2.4rem;display:grid;gap:8px}
+.principles-list li{padding:7px 12px;border-radius:10px}
+.principles-list li.focus{background:var(--brand-2);color:var(--ink);font-weight:700}
+#reviewChoices .choice.selected{outline:3px solid var(--brand);background:#eef6ff}
+.flip-back{flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.flip-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#dceef9;color:#1b2955;font-size:30px;font-weight:700;margin:0 auto 10px;line-height:1}
+.flip-back strong{display:block;margin-bottom:6px}
+.flip-back p{margin:0}
+.design-summary{max-width:900px}
+.visual-only{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.visual-only .timebox{min-height:76px;display:grid;place-items:center;text-align:center;padding:8px}
+.visual-only .timebox h4{color:var(--ink);margin:0;font-size:clamp(.82rem,1.15vw,1rem)}
+@media(max-width:900px){.visual-only{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.visual-only{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* V5.1 contrast and spacing fixes */
+/* Main navy-panel text */
+.slide .quote{color:#fff}
+
+/* Any pale/white content surface must return to dark readable text. */
+.slide .callout,
+.slide .card-lite,
+.slide .source-btn,
+.slide .feedback,
+.slide textarea,
+.slide .choice,
+.slide .sort-target,
+.slide .sort-bank,
+.slide .sort-card,
+.slide .memory-word,
+.slide .memory-hidden,
+.slide .path-step,
+.slide .timebox,
+.slide .flip-face,
+.slide .design-check,
+.slide .timeitem{
+  color:var(--text);
+}
+
+/* Headings and supporting copy inside pale/white surfaces should not inherit
+   the white-on-navy slide rules. */
+.slide .callout h3,.slide .callout h4,
+.slide .card-lite h3,.slide .card-lite h4,
+.slide .source-btn h3,.slide .source-btn h4,
+.slide .feedback h3,.slide .feedback h4,
+.slide .sort-target h3,.slide .sort-target h4,
+.slide .sort-bank h3,.slide .sort-bank h4,
+.slide .path-step h3,.slide .path-step h4,
+.slide .timebox h3,.slide .timebox h4,
+.slide .flip-face h3,.slide .flip-face h4,
+.slide .design-check h3,.slide .design-check h4{
+  color:var(--text);
+}
+
+.slide .callout .small,
+.slide .card-lite .small,
+.slide .source-btn .small,
+.slide .feedback .small,
+.slide .path-step .small,
+.slide .flip-face .small,
+.slide .design-check .small{
+  color:var(--muted);
+}
+
+/* Slide 3: compact single-spaced principles list. */
+.principles-list{gap:0}
+.principles-list li{margin:0;padding:4px 12px;line-height:1.35}
