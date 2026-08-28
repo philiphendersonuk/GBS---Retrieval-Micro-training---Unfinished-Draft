@@ -1,952 +1,299 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Retrieval: Bringing Learning Back</title>
-  <style>
-    :root{
-      --brand:#1f5f8b;
-      --brand-2:#eaf3f9;
-      --ink:#17212b;
-      --muted:#5f6b76;
-      --border:#d8e0e7;
-      --surface:#ffffff;
-      --surface-2:#f7f9fb;
-      --success:#1f7a4d;
-      --warning:#9a6700;
-      --shadow:0 10px 30px rgba(21,36,50,.08);
-      --radius:18px;
-      --max:1100px;
-    }
-
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0;
-      font-family:Arial, Helvetica, sans-serif;
-      background:#eef3f7;
-      color:var(--ink);
-      line-height:1.55;
-    }
-    button,input,textarea{font:inherit}
-    button{cursor:pointer}
-
-    .app-header{
-      background:var(--surface);
-      border-bottom:1px solid var(--border);
-      position:sticky;
-      top:0;
-      z-index:20;
-    }
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
-    .header-inner{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
-      padding:16px 0;
-    }
-    .brand-lockup{display:flex;align-items:center;gap:14px}
-    .logo-box{
-      width:46px;height:46px;border-radius:12px;
-      display:grid;place-items:center;
-      background:var(--brand);color:white;font-weight:700;
-      letter-spacing:.04em;
-    }
-    .app-header h1{font-size:22px;margin:0}
-    .subtitle{margin:2px 0 0;color:var(--muted);font-size:14px}
-    .progress-wrap{min-width:180px}
-    .progress-text{font-size:13px;color:var(--muted);text-align:right;margin-bottom:6px}
-    .progress-bar{height:8px;background:#e4e9ee;border-radius:999px;overflow:hidden}
-    .progress-fill{height:100%;width:0;background:var(--brand);transition:width .25s ease}
-
-    main{padding:28px 0 96px}
-    .course-card{
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .slide{
-      display:none;
-      min-height:610px;
-      padding:46px 52px 54px;
-      animation:fade .2s ease;
-    }
-    .slide.active{display:block}
-    @keyframes fade{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:none}}
-    h2{font-size:36px;line-height:1.15;margin:0 0 18px}
-    h3{font-size:24px;margin:28px 0 12px}
-    p{font-size:20px;margin:12px 0}
-    ul,ol{font-size:19px}
-    .lead{font-size:24px;max-width:900px}
-    .small{font-size:16px;color:var(--muted)}
-    .eyebrow{
-      font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-      color:var(--brand);margin-bottom:10px;
-    }
-    .callout{
-      border-left:5px solid var(--brand);
-      background:var(--brand-2);
-      padding:18px 20px;
-      border-radius:12px;
-      margin:24px 0;
-      font-size:20px;
-    }
-    .quote{
-      font-size:28px;
-      line-height:1.35;
-      font-weight:700;
-      margin:22px 0;
-    }
-
-    .grid{display:grid;gap:18px}
-    .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
-    .card-lite{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:18px;
-      background:#fff;
-    }
-    .card-lite strong{font-size:19px}
-    .principle{
-      min-height:130px;
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-    }
-    .principle .num{
-      width:34px;height:34px;border-radius:50%;
-      background:#edf2f7;display:grid;place-items:center;font-weight:700;flex:0 0 auto;
-    }
-    .principle.focus{
-      border:2px solid var(--brand);
-      background:var(--brand-2);
-    }
-    .principle.focus .num{background:var(--brand);color:#fff}
-    .principle.secondary{
-      border:2px dashed var(--brand);
-    }
-
-    .choice-grid{display:grid;gap:14px;margin-top:20px}
-    .choice{
-      width:100%;
-      text-align:left;
-      background:#fff;
-      border:2px solid var(--border);
-      border-radius:14px;
-      padding:18px;
-      color:var(--ink);
-    }
-    .choice:hover,.choice:focus{border-color:var(--brand)}
-    .choice.selected{border-color:var(--brand);background:var(--brand-2)}
-    .feedback{
-      margin-top:18px;
-      padding:16px 18px;
-      border-radius:12px;
-      background:#f3f7fa;
-      border:1px solid var(--border);
-      display:none;
-      font-size:18px;
-    }
-    .feedback.show{display:block}
-
-    .three-sources{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:18px;margin-top:28px;
-    }
-    .source-btn{
-      background:#fff;border:1px solid var(--border);border-radius:14px;
-      padding:20px;text-align:left;min-height:145px;
-    }
-    .source-btn.open{background:var(--brand-2);border-color:var(--brand)}
-    .source-btn .detail{display:none;margin-top:10px;color:var(--muted);font-size:17px}
-    .source-btn.open .detail{display:block}
-
-    textarea{
-      width:100%;min-height:130px;border:1px solid var(--border);
-      border-radius:12px;padding:14px;margin-top:12px;resize:vertical;
-    }
-    .btn{
-      border:0;border-radius:12px;background:var(--brand);color:white;
-      padding:12px 18px;font-weight:700;
-    }
-    .btn.secondary{background:#e7edf2;color:var(--ink)}
-    .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-
-    .sort-bank,.sort-target{
-      border:2px dashed var(--border);border-radius:14px;padding:14px;min-height:90px;
-      background:var(--surface-2);
-    }
-    .sort-card{
-      display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;
-      border:1px solid var(--border);border-radius:10px;background:#fff;
-      cursor:pointer;
-    }
-    .sort-card:hover{border-color:var(--brand)}
-    .sort-target h4{margin:0 0 10px}
-    .sort-target .sort-card{background:var(--brand-2)}
-    .sort-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-
-    .pathway{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px
-    }
-    .path-step{
-      border:1px solid var(--border);border-radius:14px;padding:18px;background:#fff;min-height:140px;
-    }
-    .path-step button{margin-top:10px}
-    .path-detail{display:none;margin-top:8px;color:var(--muted)}
-    .path-step.open{background:var(--brand-2);border-color:var(--brand)}
-    .path-step.open .path-detail{display:block}
-
-    .memory-list{
-      display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:22px 0;
-    }
-    .memory-word{
-      padding:18px 10px;text-align:center;border:1px solid var(--border);border-radius:12px;
-      background:#fff;font-size:22px;font-weight:700;
-    }
-    .memory-hidden{
-      min-height:180px;display:grid;place-items:center;
-      border:2px dashed var(--border);border-radius:14px;background:var(--surface-2);
-      padding:20px;text-align:center;
-    }
-    .countdown{font-size:44px;font-weight:700}
-
-    .flip{height:240px;perspective:1000px}
-    .flip-inner{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
-    .flip.show .flip-inner{transform:rotateY(180deg)}
-    .flip-face{
-      position:absolute;inset:0;backface-visibility:hidden;
-      border:1px solid var(--border);border-radius:14px;padding:20px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-      background:#fff;
-    }
-    .flip-front strong{font-size:22px}
-    .flip-back{transform:rotateY(180deg);background:var(--brand-2);align-items:flex-start;text-align:left}
-    .flip-back p{font-size:17px;margin:6px 0}
-
-    .design-checks{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .design-check{border:1px solid var(--border);border-radius:14px;padding:16px;background:#fff}
-    .design-check strong{display:block;margin-bottom:6px}
-
-    .timeline{
-      display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:24px;
-    }
-    .timebox{
-      border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff;min-height:160px;
-    }
-    .timebox h4{margin:0 0 8px;font-size:18px}
-    .timeitem{
-      border:1px solid var(--border);background:var(--brand-2);padding:10px;border-radius:9px;margin:8px 0;
-      font-size:15px;cursor:pointer;
-    }
-
-    .footer{
-      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);z-index:30;
-    }
-    .footer-inner{
-      max-width:var(--max);margin:0 auto;padding:12px 22px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-    }
-    #navStatus{color:var(--muted);font-size:14px}
-
-    .complete-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
-    .checklist{font-size:19px}
-    .checklist li{margin-bottom:8px}
-
-    @media(max-width:900px){
-      .slide{padding:34px 26px 42px}
-      h2{font-size:30px}
-      .cols-3,.cols-5,.three-sources,.design-checks{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .pathway,.timeline{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .memory-list{grid-template-columns:repeat(2,minmax(0,1fr))}
-    }
-    @media(max-width:620px){
-      .header-inner{align-items:flex-start}
-      .progress-wrap{display:none}
-      .cols-2,.cols-3,.cols-5,.three-sources,.design-checks,.pathway,.timeline{grid-template-columns:1fr}
-      .slide{min-height:auto;padding:28px 18px 36px}
-      h2{font-size:27px}
-      p,.lead{font-size:18px}
-      .memory-list{grid-template-columns:repeat(2,1fr)}
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Retrieval: Bringing Learning Back</title>
+<link href="style.css" rel="stylesheet"/>
 </head>
-
 <body>
 <header class="app-header">
-  <div class="wrap header-inner">
-    <div class="brand-lockup">
-      <div class="logo-box" aria-hidden="true">CPD</div>
-      <div>
-        <h1>Retrieval: Bringing Learning Back</h1>
-        <p class="subtitle">A short online course for teaching staff</p>
-      </div>
-    </div>
-    <div class="progress-wrap" aria-label="Course progress">
-      <div class="progress-text"><span id="progressLabel">1 of 15</span></div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-  </div>
+<div class="wrap header-inner">
+<div class="brand-lockup">
+<img alt="Global Banking School" class="gbs-logo" src="data:image/png;base64,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"/>
+<div>
+<h1>Retrieval: Bringing Learning Back</h1>
+<p class="subtitle">A short online course for teaching staff</p>
+</div>
+</div>
+<div aria-label="Course progress" class="progress-wrap">
+<div class="progress-text"><span id="progressLabel">1 of 14</span></div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+</div>
 </header>
-
 <main class="wrap">
-  <div class="course-card">
+<div class="course-card">
+<!-- Slide 1 -->
+<section class="slide active" data-slide="0">
+<div class="eyebrow">Welcome</div>
+<h2>What is retrieval — and why use it?</h2>
+<p class="lead">How can we help students remember and use what they have learned?</p>
+<p>In this short course, we'll explore retrieval: what it is, why it can support learning, and practical ways to build it into teaching.</p>
+<div class="callout">
+<strong>By the end, you'll be able to:</strong>
+<ul>
+<li>explain what retrieval means;</li>
+<li>distinguish retrieval from simply revisiting material;</li>
+<li>identify different ways to use retrieval in your teaching;</li>
+<li>consider when previous learning should be retrieved.</li>
+</ul>
+</div>
+<p class="small">Estimated time: 10–15 minutes. A separate knowledge check is available on the VLE after the course.</p>
+</section>
+<!-- Slide 2 -->
+<section class="slide" data-slide="1">
+<div class="eyebrow">Setting the scene</div>
+<h2>Rosenshine in 60 seconds</h2>
+<div class="scene-copy"><p>In the 1980s, Professor of Educational Psychology Barak Rosenshine began researching the characteristics and functions of effective teaching.</p><p>In 2012, he published the widely cited <em>Principles of Instruction: Research-Based Strategies That All Teachers Should Know</em>, setting out <strong>ten principles for effective instruction</strong>.</p><p><strong>The principles drew upon three main areas of research…</strong></p></div>
+<div class="three-sources">
+<button class="source-btn" data-interaction="source-cognitive">
+<strong>Cognitive science</strong>
+<div class="detail">How we acquire, organise and use information — including the limits of working memory.</div>
+</button>
+<button class="source-btn" data-interaction="source-teachers">
+<strong>Effective classroom practice</strong>
+<div class="detail">What highly successful teachers tended to do when presenting, questioning, checking and supporting learning.</div>
+</button>
+<button class="source-btn" data-interaction="source-supports">
+<strong>Cognitive supports</strong>
+<div class="detail">Approaches such as modelling, thinking aloud and scaffolding that help learners tackle complex tasks.</div>
+</button>
+</div>
+<p class="callout">A recurring theme is helping learners build, practise and connect knowledge so that it becomes readily accessible when they need it.</p>
+</section>
+<!-- Slide 3 -->
+<section class="slide" data-slide="2">
+<div class="eyebrow">The wider framework</div>
+<h2>Rosenshine's 10 principles at a glance</h2>
+<p>Here are Rosenshine’s ten Principles of Instruction at a glance. Notice how the very first and very last principles connect directly to the concept of retrieval — the focus of this course.</p><ol class="principles-list"><li class="focus">Begin a lesson with a short review of previous learning.</li><li>Present new material in small steps with practice after each step.</li><li>Ask a large number of questions and check responses.</li><li>Provide models.</li><li>Guide student practice.</li><li>Check for student understanding.</li><li>Obtain a high success rate.</li><li>Provide scaffolds for difficult tasks.</li><li>Require and monitor independent practice.</li><li class="focus">Engage students in weekly and monthly review.</li></ol>
 
-    <!-- Slide 1 -->
-    <section class="slide active" data-slide="0">
-      <div class="eyebrow">Welcome</div>
-      <h2>What is retrieval — and why use it?</h2>
-      <p class="lead">How can we help students remember and use what they have learned?</p>
-      <p>In this short course, we'll explore retrieval: what it is, why it can support learning, and practical ways to build it into teaching.</p>
-      <div class="callout">
-        <strong>By the end, you'll be able to:</strong>
-        <ul>
-          <li>explain what retrieval means;</li>
-          <li>distinguish retrieval from simply revisiting material;</li>
-          <li>identify different ways to use retrieval in your teaching;</li>
-          <li>consider when previous learning should be retrieved.</li>
-        </ul>
-      </div>
-      <p class="small">Estimated time: 10–15 minutes. A separate knowledge check is available on the VLE after the course.</p>
-    </section>
+</section>
+<!-- Slide 4 -->
+<section class="slide" data-slide="3">
+<div class="eyebrow">Zooming in</div>
+<h2>Principle 1: Review previous learning</h2>
+<p class="quote">“Begin a lesson with a short review of previous learning.”</p><p><strong>Why do you think Rosenshine considers this to be important?</strong></p><p class="small">Type your thoughts below, then reveal the answer.</p>
 
-    <!-- Slide 2 -->
-    <section class="slide" data-slide="1">
-      <div class="eyebrow">Setting the scene</div>
-      <h2>Rosenshine in 60 seconds</h2>
-      <p>Barak Rosenshine's <em>Principles of Instruction</em> brought together findings from three complementary areas of research.</p>
 
-      <div class="three-sources">
-        <button class="source-btn" data-interaction="source-cognitive">
-          <strong>Cognitive science</strong>
-          <div class="detail">How we acquire, organise and use information — including the limits of working memory.</div>
-        </button>
-        <button class="source-btn" data-interaction="source-teachers">
-          <strong>Effective classroom practice</strong>
-          <div class="detail">What highly successful teachers tended to do when presenting, questioning, checking and supporting learning.</div>
-        </button>
-        <button class="source-btn" data-interaction="source-supports">
-          <strong>Cognitive supports</strong>
-          <div class="detail">Approaches such as modelling, thinking aloud and scaffolding that help learners tackle complex tasks.</div>
-        </button>
-      </div>
+<textarea id="principle1Recall" placeholder="Type a few words or ideas here. This is not scored."></textarea>
+<div style="margin-top:12px">
+<button class="btn ghost" id="revealP1">Reveal explanation</button>
+</div>
+<div class="feedback" id="p1Feedback"><p>Previous knowledge needs to be <strong>available when students need it for today’s learning</strong> in order to:</p><ul><li>Strengthen recall</li><li>Support fluency</li><li>Make relevant prior knowledge easier to access</li></ul></div>
+</section>
+<!-- Slide 5 -->
+<section class="slide" data-slide="4">
+<div class="eyebrow">From review to retrieval</div>
+<h2>But what do we mean by “review”?</h2>
+<p>Imagine you're about to teach something new. Your students have encountered some of the knowledge they'll need before.</p>
+<p>You could…</p>
+<p class="small">Select the two options that involve retrieval, then check your answer.</p><div class="choice-grid" id="reviewChoices"><button class="choice" data-answer="reexposure" data-key="a" type="button">A. Show them yesterday's notes again.</button><button class="choice" data-answer="reexposure" data-key="b" type="button">B. Explain the key ideas again yourself.</button><button class="choice" data-answer="retrieval" data-key="c" type="button">C. Ask them to write down the key ideas they can remember without looking at their notes.</button><button class="choice" data-answer="retrieval" data-key="d" type="button">D. Ask them to explain the key ideas to a partner without using their notes.</button><button class="choice" data-answer="reexposure" data-key="e" type="button">E. Give them a completed summary of the key ideas to read before continuing.</button></div><button class="btn" id="checkReview" type="button">Check answer</button>
+<div class="feedback" id="reviewFeedback"></div>
 
-      <p class="callout">A recurring theme is helping learners build, practise and connect knowledge so that it becomes readily accessible when they need it.</p>
-    </section>
+</section>
+<!-- Slide 6 -->
+<section class="slide" data-slide="5">
+<div class="eyebrow">Key distinction</div>
+<h2>Retrieval ≠ simply seeing something again</h2>
+<div class="grid cols-2">
+<div class="card-lite">
+<h3>Retrieval</h3>
+<p>The learner has to bring previously learned information back to mind.</p>
+</div>
+<div class="card-lite">
+<h3>Re-exposure</h3>
+<p>The information is presented to the learner again.</p>
+</div>
+</div>
+<p><strong>Can you spot the difference?</strong> Click each example, then choose where it belongs.</p>
+<div class="grid cols-2">
+<div>
+<div class="sort-bank" id="sortBank">
+<button class="sort-card" data-correct="reexposure">Reread last week's notes</button>
+<button class="sort-card" data-correct="retrieval">Write everything you remember about last week's topic</button>
+<button class="sort-card" data-correct="reexposure">Watch the explanation again</button>
+<button class="sort-card" data-correct="retrieval">Draw last week's diagram from memory</button>
+<button class="sort-card" data-correct="reexposure">Look at a completed model</button>
+<button class="sort-card" data-correct="retrieval">Explain yesterday's concept to a partner without notes</button>
+<button class="sort-card" data-correct="retrieval" type="button">Draw a diagram of the process from memory, then compare it with the original.</button><button class="sort-card" data-correct="reexposure" type="button">Watch a short video that explains the process again.</button></div>
+<div class="sort-actions">
+<button class="btn secondary" id="placeRetrieval">Place in Retrieval</button>
+<button class="btn secondary" id="placeReexposure">Place in Re-exposure</button>
+</div>
+</div>
+<div class="grid cols-2">
+<div class="sort-target" data-zone="retrieval" id="retrievalTarget"><h4>Retrieval</h4></div>
+<div class="sort-target" data-zone="reexposure" id="reexposureTarget"><h4>Re-exposure</h4></div>
+</div>
+</div>
+<div style="margin-top:14px"><button class="btn" id="checkSort">Check</button></div>
+<div class="feedback" id="sortFeedback"></div>
+</section>
+<!-- Slide 7 -->
+<section class="slide" data-slide="6">
+<div class="eyebrow">Why it matters</div>
+<h2>Why bring knowledge back to mind?</h2>
+<p>Rosenshine emphasises that previous knowledge should become <strong>readily accessible</strong>.</p>
+<p>When important knowledge can be recalled fluently, students do not have to devote as much of their limited working-memory capacity to reconstructing the basics.</p>
+<div class="pathway">
+<div class="path-step">
+<strong>1. Retrieve</strong>
+<button class="btn ghost mini-reveal">Reveal</button>
+<div class="path-detail">Bring relevant previous learning back to mind.</div>
+</div>
+<div class="path-step">
+<strong>2. Access</strong>
+<button class="btn ghost mini-reveal">Reveal</button>
+<div class="path-detail">Repeated access helps important knowledge become more fluent and readily available.</div>
+</div>
+<div class="path-step">
+<strong>3. Connect</strong>
+<button class="btn ghost mini-reveal">Reveal</button>
+<div class="path-detail">Available prior knowledge can be connected to new ideas more easily.</div>
+</div>
+<div class="path-step">
+<strong>4. Build</strong>
+<button class="btn ghost mini-reveal">Reveal</button>
+<div class="path-detail">More working-memory capacity can be devoted to understanding and applying new learning.</div>
+</div>
+</div>
+<p class="callout"><strong>RETRIEVE → ACCESS → CONNECT → BUILD</strong><br/>Retrieval is not only about remembering old learning. It can help prepare students for what comes next.</p>
+</section>
+<!-- Slide 8 -->
+<section class="slide" data-slide="7">
+<div class="eyebrow">Experience it</div>
+<h2>Your turn: try retrieval</h2>
+<p>Take <strong>30 seconds</strong> to study the following items. Try to remember as many as you can. Once 30 seconds have passed, click the <strong>‘I’m ready’</strong> button below.</p>
+<div id="memoryStudy">
+<div class="memory-list">
+<div class="memory-word">River</div><div class="memory-word">Candle</div><div class="memory-word">Bicycle</div><div class="memory-word">Lemon</div><div class="memory-word">Window</div>
+<div class="memory-word">Tiger</div><div class="memory-word">Button</div><div class="memory-word">Guitar</div><div class="memory-word">Cloud</div><div class="memory-word">Key</div>
+</div>
+<button class="btn" id="memoryReady">I'm ready</button>
+</div>
+<div class="memory-hidden" id="memoryDistractor" style="display:none">
+<div>
+<p><strong>Quick distraction:</strong> count backwards from 30 in threes.</p>
+<div class="countdown" id="distractTimer">10</div>
+</div>
+</div>
+<div id="memoryRecall" style="display:none">
+<p><strong>Now, without going back, type as many words as you can remember.</strong></p>
+<textarea id="memoryInput" placeholder="Type the words you remember here..."></textarea>
+<button class="btn" id="memoryDone">I've finished</button>
+</div>
+</section>
+<!-- Slide 9 -->
+<section class="slide" data-slide="8">
+<div class="eyebrow">What just happened?</div>
+<h2>You just practised retrieval</h2>
+<p>The information was removed, so you couldn't simply recognise or reread it. You had to <strong>bring it back from memory</strong>.</p>
+<p>Now compare what you recalled with the original list:</p>
+<div class="memory-list">
+<div class="memory-word">River</div><div class="memory-word">Candle</div><div class="memory-word">Bicycle</div><div class="memory-word">Lemon</div><div class="memory-word">Window</div>
+<div class="memory-word">Tiger</div><div class="memory-word">Button</div><div class="memory-word">Guitar</div><div class="memory-word">Cloud</div><div class="memory-word">Key</div>
+</div>
+<p class="callout">Forgetting some isn't a failure of the activity. <strong>The attempt to retrieve is the activity.</strong> In teaching, that attempt should be followed by feedback, correction or another opportunity to strengthen the learning.</p>
+<p class="small" id="recallCount"></p>
+</section>
+<!-- Slide 10 -->
+<section class="slide" data-slide="9">
+<div class="eyebrow">Beyond the quiz</div>
+<h2>Retrieval doesn't have to mean a quiz</h2>
+<p>A quiz can be an excellent retrieval activity — but it's only one option.</p>
+<p class="callout"><strong>The key question is:</strong> does the learner have to bring relevant previous learning to mind?</p>
+<div class="grid cols-3">
+<div class="flip" data-flip=""><div class="flip-inner">
+<div class="flip-front flip-face"><strong>Blank Page</strong><span class="small">Click to explore</span></div>
+<div class="flip-back flip-face"><div aria-hidden="true" class="flip-icon">✎</div><strong>Blank Page</strong><p>Students write or sketch everything they can remember about a previous topic before checking notes.</p></div>
+</div></div>
+<div class="flip" data-flip=""><div class="flip-inner">
+<div class="flip-front flip-face"><strong>Rebuild It</strong><span class="small">Click to explore</span></div>
+<div class="flip-back flip-face"><div aria-hidden="true" class="flip-icon">▦</div><strong>Rebuild It</strong><p>Reconstruct a diagram, sequence, process or concept map from memory.</p></div>
+</div></div>
+<div class="flip" data-flip=""><div class="flip-inner">
+<div class="flip-front flip-face"><strong>Spot the Mistake</strong><span class="small">Click to explore</span></div>
+<div class="flip-back flip-face"><div aria-hidden="true" class="flip-icon">⌕</div><strong>Spot the Mistake</strong><p>Use previous knowledge to identify and correct deliberate errors or misconceptions.</p></div>
+</div></div>
+<div class="flip" data-flip=""><div class="flip-inner">
+<div class="flip-front flip-face"><strong>What's the Question?</strong><span class="small">Click to explore</span></div>
+<div class="flip-back flip-face"><div aria-hidden="true" class="flip-icon">?</div><strong>What's the Question?</strong><p>Give students an answer or key concept and ask them to reconstruct a plausible question.</p></div>
+</div></div>
+<div class="flip" data-flip=""><div class="flip-inner">
+<div class="flip-front flip-face"><strong>Explain It</strong><span class="small">Click to explore</span></div>
+<div class="flip-back flip-face"><div aria-hidden="true" class="flip-icon">◌</div><strong>Explain It</strong><p>Students explain previous learning to a partner without using their notes.</p></div>
+</div></div>
+<div class="flip" data-flip=""><div class="flip-inner">
+<div class="flip-front flip-face"><strong>Odd One Out</strong><span class="small">Click to explore</span></div>
+<div class="flip-back flip-face"><div aria-hidden="true" class="flip-icon">◇</div><strong>Odd One Out</strong><p>Students identify relationships between previously learned concepts and justify which one does not belong.</p></div>
+</div></div>
+</div>
+</section>
+<!-- Slide 11 -->
+<section class="slide" data-slide="10">
+<div class="eyebrow">Choose the right form</div>
+<h2>Retrieval can take many forms</h2>
+<p>The best technique depends on <strong>what you want students to retrieve</strong>. Look at some of the examples below.</p>
+<div class="grid cols-3">
+<div class="card-lite"><strong>Words &amp; concepts</strong><p class="small">Brain dump, word cloud, flashcards, quick definitions.</p></div>
+<div class="card-lite"><strong>Processes</strong><p class="small">Rebuild a sequence, complete missing steps, reorder a method.</p></div>
+<div class="card-lite"><strong>Connections</strong><p class="small">Concept map, odd one out, compare and connect.</p></div>
+<div class="card-lite"><strong>Explanations</strong><p class="small">Teach a partner, record a 30-second explanation, summarise aloud.</p></div>
+<div class="card-lite"><strong>Misconceptions</strong><p class="small">Spot the mistake, correct a flawed example, explain why an answer fails.</p></div>
+<div class="card-lite"><strong>Digital retrieval</strong><p class="small">Polls, collaborative boards, flashcards or an AI questioner.</p></div>
+</div>
+<div class="callout"><p><strong>Remember!</strong> When using technology or asking students to use technology, <strong>the technology isn't the retrieval. The thinking is.</strong></p><p>For example:</p><p><strong>✕ Do not ask AI to:</strong> Briefly summarise Transformational Leadership and Transactional Leadership for me.</p><p><strong>✓ Instead, ask AI to:</strong> Give me 5 simple multiple choice questions to check my understanding of Transformational Leadership and Transactional Leadership.</p></div>
+</section>
+<!-- Slide 12 -->
+<section class="slide" data-slide="11">
+<div class="eyebrow">Designing it well</div>
+<h2>What makes retrieval useful?</h2>
+<p class="design-summary">Effective retrieval should focus on <strong>relevant knowledge students will need</strong>, require learners to bring it back <strong>from memory</strong>, and give <strong>everyone an opportunity to participate</strong>. Keep it <strong>low stakes</strong>, provide feedback so students can establish the correct or complete answer, and use their responses purposefully to understand what they know and what may need revisiting.</p>
+<h3>Which gives the stronger retrieval opportunity?</h3>
+<div class="choice-grid" id="scenarioChoices">
+<button class="choice" data-answer="a"><strong>Teacher A:</strong> displays last week's summary slide and talks through it.</button>
+<button class="choice" data-answer="b"><strong>Teacher B:</strong> asks everyone to reconstruct the key ideas first, then displays the summary so they can check.</button>
+</div>
+<div class="feedback" id="scenarioFeedback"></div>
+</section>
+<!-- Slide 13 -->
 
-    <!-- Slide 3 -->
-    <section class="slide" data-slide="2">
-      <div class="eyebrow">The wider framework</div>
-      <h2>Rosenshine's 10 principles at a glance</h2>
-      <div class="grid cols-5">
-        <div class="card-lite principle focus"><span class="num">1</span><div>Begin a lesson with a short review of previous learning.</div></div>
-        <div class="card-lite principle"><span class="num">2</span><div>Present new material in small steps with practice after each step.</div></div>
-        <div class="card-lite principle"><span class="num">3</span><div>Ask a large number of questions and check responses.</div></div>
-        <div class="card-lite principle"><span class="num">4</span><div>Provide models.</div></div>
-        <div class="card-lite principle"><span class="num">5</span><div>Guide student practice.</div></div>
-        <div class="card-lite principle"><span class="num">6</span><div>Check for student understanding.</div></div>
-        <div class="card-lite principle"><span class="num">7</span><div>Obtain a high success rate.</div></div>
-        <div class="card-lite principle"><span class="num">8</span><div>Provide scaffolds for difficult tasks.</div></div>
-        <div class="card-lite principle"><span class="num">9</span><div>Require and monitor independent practice.</div></div>
-        <div class="card-lite principle secondary"><span class="num">10</span><div>Engage students in weekly and monthly review.</div></div>
-      </div>
-      <p class="callout">We'll concentrate primarily on <strong>Principle 1</strong> — before returning to <strong>Principle 10</strong> later.</p>
-    </section>
-
-    <!-- Slide 4 -->
-    <section class="slide" data-slide="3">
-      <div class="eyebrow">Zooming in</div>
-      <h2>Principle 1: Review previous learning</h2>
-      <p class="quote">“Daily review can strengthen previous learning and can lead to fluent recall.”</p>
-      <p>Rosenshine argues that effective teachers regularly reactivate knowledge students have encountered previously.</p>
-      <p><strong>Before revealing more, what do you remember about why Rosenshine thought review was important?</strong></p>
-      <textarea id="principle1Recall" placeholder="Type a few words or ideas here. This is not scored."></textarea>
-      <div style="margin-top:12px">
-        <button class="btn ghost" id="revealP1">Reveal explanation</button>
-      </div>
-      <div class="feedback" id="p1Feedback">
-        Previous knowledge needs to be <strong>available when students need it for today's learning</strong>. Review can strengthen recall, support fluency and make relevant prior knowledge easier to access.
-      </div>
-    </section>
-
-    <!-- Slide 5 -->
-    <section class="slide" data-slide="4">
-      <div class="eyebrow">From review to retrieval</div>
-      <h2>What do we mean by “review”?</h2>
-      <p>Imagine you're about to teach something new. Your students have encountered some of the knowledge they'll need before.</p>
-      <p>You could…</p>
-      <div class="choice-grid" id="reviewChoices">
-        <button class="choice" data-answer="reexposure">A. Show them yesterday's notes again.</button>
-        <button class="choice" data-answer="reexposure">B. Explain the key ideas again yourself.</button>
-        <button class="choice" data-answer="retrieval">C. Ask them to bring the key ideas back to mind without looking.</button>
-      </div>
-      <div class="feedback" id="reviewFeedback"></div>
-      <p class="small">All three revisit previous learning — but only one necessarily requires the learner to retrieve it.</p>
-    </section>
-
-    <!-- Slide 6 -->
-    <section class="slide" data-slide="5">
-      <div class="eyebrow">Key distinction</div>
-      <h2>Retrieval ≠ simply seeing something again</h2>
-      <div class="grid cols-2">
-        <div class="card-lite">
-          <h3>Retrieval</h3>
-          <p>The learner has to bring previously learned information back to mind.</p>
-        </div>
-        <div class="card-lite">
-          <h3>Re-exposure</h3>
-          <p>The information is presented to the learner again.</p>
-        </div>
-      </div>
-      <p><strong>Can you spot the difference?</strong> Click each example, then choose where it belongs.</p>
-
-      <div class="grid cols-2">
-        <div>
-          <div id="sortBank" class="sort-bank">
-            <button class="sort-card" data-correct="reexposure">Reread last week's notes</button>
-            <button class="sort-card" data-correct="retrieval">Write everything you remember about last week's topic</button>
-            <button class="sort-card" data-correct="reexposure">Watch the explanation again</button>
-            <button class="sort-card" data-correct="retrieval">Draw last week's diagram from memory</button>
-            <button class="sort-card" data-correct="reexposure">Look at a completed model</button>
-            <button class="sort-card" data-correct="retrieval">Explain yesterday's concept to a partner without notes</button>
-          </div>
-          <div class="sort-actions">
-            <button class="btn secondary" id="placeRetrieval">Place in Retrieval</button>
-            <button class="btn secondary" id="placeReexposure">Place in Re-exposure</button>
-          </div>
-        </div>
-        <div class="grid cols-2">
-          <div class="sort-target" id="retrievalTarget" data-zone="retrieval"><h4>Retrieval</h4></div>
-          <div class="sort-target" id="reexposureTarget" data-zone="reexposure"><h4>Re-exposure</h4></div>
-        </div>
-      </div>
-      <div style="margin-top:14px"><button class="btn" id="checkSort">Check</button></div>
-      <div class="feedback" id="sortFeedback"></div>
-    </section>
-
-    <!-- Slide 7 -->
-    <section class="slide" data-slide="6">
-      <div class="eyebrow">Why it matters</div>
-      <h2>Why bring knowledge back to mind?</h2>
-      <p>Rosenshine emphasises that previous knowledge should become <strong>readily accessible</strong>.</p>
-      <p>When important knowledge can be recalled fluently, students do not have to devote as much of their limited working-memory capacity to reconstructing the basics.</p>
-
-      <div class="pathway">
-        <div class="path-step">
-          <strong>1. Retrieve</strong>
-          <button class="btn ghost mini-reveal">Reveal</button>
-          <div class="path-detail">Bring relevant previous learning back to mind.</div>
-        </div>
-        <div class="path-step">
-          <strong>2. Access</strong>
-          <button class="btn ghost mini-reveal">Reveal</button>
-          <div class="path-detail">Repeated access helps important knowledge become more fluent and readily available.</div>
-        </div>
-        <div class="path-step">
-          <strong>3. Connect</strong>
-          <button class="btn ghost mini-reveal">Reveal</button>
-          <div class="path-detail">Available prior knowledge can be connected to new ideas more easily.</div>
-        </div>
-        <div class="path-step">
-          <strong>4. Build</strong>
-          <button class="btn ghost mini-reveal">Reveal</button>
-          <div class="path-detail">More working-memory capacity can be devoted to understanding and applying new learning.</div>
-        </div>
-      </div>
-      <p class="callout"><strong>RETRIEVE → ACCESS → CONNECT → BUILD</strong><br/>Retrieval is not only about remembering old learning. It can help prepare students for what comes next.</p>
-    </section>
-
-    <!-- Slide 8 -->
-    <section class="slide" data-slide="7">
-      <div class="eyebrow">Experience it</div>
-      <h2>Your turn: try retrieval</h2>
-      <p>Take <strong>30 seconds</strong> to study the following items. Try to remember as many as you can.</p>
-
-      <div id="memoryStudy">
-        <div class="memory-list">
-          <div class="memory-word">River</div><div class="memory-word">Candle</div><div class="memory-word">Bicycle</div><div class="memory-word">Lemon</div><div class="memory-word">Window</div>
-          <div class="memory-word">Tiger</div><div class="memory-word">Button</div><div class="memory-word">Guitar</div><div class="memory-word">Cloud</div><div class="memory-word">Key</div>
-        </div>
-        <button class="btn" id="memoryReady">I'm ready</button>
-      </div>
-
-      <div id="memoryDistractor" class="memory-hidden" style="display:none">
-        <div>
-          <p><strong>Quick distraction:</strong> count backwards from 30 in threes.</p>
-          <div class="countdown" id="distractTimer">10</div>
-        </div>
-      </div>
-
-      <div id="memoryRecall" style="display:none">
-        <p><strong>Now, without going back, type as many words as you can remember.</strong></p>
-        <textarea id="memoryInput" placeholder="Type the words you remember here..."></textarea>
-        <button class="btn" id="memoryDone">I've finished</button>
-      </div>
-    </section>
-
-    <!-- Slide 9 -->
-    <section class="slide" data-slide="8">
-      <div class="eyebrow">What just happened?</div>
-      <h2>You just practised retrieval</h2>
-      <p>The information was removed, so you couldn't simply recognise or reread it. You had to <strong>bring it back from memory</strong>.</p>
-      <p>Now compare what you recalled with the original list:</p>
-      <div class="memory-list">
-        <div class="memory-word">River</div><div class="memory-word">Candle</div><div class="memory-word">Bicycle</div><div class="memory-word">Lemon</div><div class="memory-word">Window</div>
-        <div class="memory-word">Tiger</div><div class="memory-word">Button</div><div class="memory-word">Guitar</div><div class="memory-word">Cloud</div><div class="memory-word">Key</div>
-      </div>
-      <p class="callout">Forgetting some isn't a failure of the activity. <strong>The attempt to retrieve is the activity.</strong> In teaching, that attempt should be followed by feedback, correction or another opportunity to strengthen the learning.</p>
-      <p id="recallCount" class="small"></p>
-    </section>
-
-    <!-- Slide 10 -->
-    <section class="slide" data-slide="9">
-      <div class="eyebrow">Beyond the quiz</div>
-      <h2>Retrieval doesn't have to mean a quiz</h2>
-      <p>A quiz can be an excellent retrieval activity — but it's only one option.</p>
-      <p class="callout"><strong>The key question is:</strong> does the learner have to bring relevant previous learning to mind?</p>
-
-      <div class="grid cols-3">
-        <div class="flip" data-flip><div class="flip-inner">
-          <div class="flip-front flip-face"><strong>Blank Page</strong><span class="small">Click to explore</span></div>
-          <div class="flip-back flip-face"><strong>Blank Page</strong><p>Students write or sketch everything they can remember about a previous topic before checking notes.</p></div>
-        </div></div>
-        <div class="flip" data-flip><div class="flip-inner">
-          <div class="flip-front flip-face"><strong>Rebuild It</strong><span class="small">Click to explore</span></div>
-          <div class="flip-back flip-face"><strong>Rebuild It</strong><p>Reconstruct a diagram, sequence, process or concept map from memory.</p></div>
-        </div></div>
-        <div class="flip" data-flip><div class="flip-inner">
-          <div class="flip-front flip-face"><strong>Spot the Mistake</strong><span class="small">Click to explore</span></div>
-          <div class="flip-back flip-face"><strong>Spot the Mistake</strong><p>Use previous knowledge to identify and correct deliberate errors or misconceptions.</p></div>
-        </div></div>
-        <div class="flip" data-flip><div class="flip-inner">
-          <div class="flip-front flip-face"><strong>What's the Question?</strong><span class="small">Click to explore</span></div>
-          <div class="flip-back flip-face"><strong>What's the Question?</strong><p>Give students an answer or key concept and ask them to reconstruct a plausible question.</p></div>
-        </div></div>
-        <div class="flip" data-flip><div class="flip-inner">
-          <div class="flip-front flip-face"><strong>Explain It</strong><span class="small">Click to explore</span></div>
-          <div class="flip-back flip-face"><strong>Explain It</strong><p>Students explain previous learning to a partner without using their notes.</p></div>
-        </div></div>
-        <div class="flip" data-flip><div class="flip-inner">
-          <div class="flip-front flip-face"><strong>Odd One Out</strong><span class="small">Click to explore</span></div>
-          <div class="flip-back flip-face"><strong>Odd One Out</strong><p>Students identify relationships between previously learned concepts and justify which one does not belong.</p></div>
-        </div></div>
-      </div>
-    </section>
-
-    <!-- Slide 11 -->
-    <section class="slide" data-slide="10">
-      <div class="eyebrow">Choose the right form</div>
-      <h2>Retrieval can take many forms</h2>
-      <p>The best technique depends on <strong>what you want students to retrieve</strong>.</p>
-      <div class="grid cols-3">
-        <div class="card-lite"><strong>Words & concepts</strong><p class="small">Brain dump, word cloud, flashcards, quick definitions.</p></div>
-        <div class="card-lite"><strong>Processes</strong><p class="small">Rebuild a sequence, complete missing steps, reorder a method.</p></div>
-        <div class="card-lite"><strong>Connections</strong><p class="small">Concept map, odd one out, compare and connect.</p></div>
-        <div class="card-lite"><strong>Explanations</strong><p class="small">Teach a partner, record a 30-second explanation, summarise aloud.</p></div>
-        <div class="card-lite"><strong>Misconceptions</strong><p class="small">Spot the mistake, correct a flawed example, explain why an answer fails.</p></div>
-        <div class="card-lite"><strong>Digital retrieval</strong><p class="small">Polls, collaborative boards, flashcards or an AI questioner.</p></div>
-      </div>
-      <div class="callout">
-        <strong>The technology isn't the retrieval. The thinking is.</strong>
-        <p class="small" style="margin-bottom:0">Example AI prompt: “Ask me questions one at a time about [topic]. Don't give me the answer. If I struggle, give me a hint.”</p>
-      </div>
-    </section>
-
-    <!-- Slide 12 -->
-    <section class="slide" data-slide="11">
-      <div class="eyebrow">Designing it well</div>
-      <h2>What makes retrieval useful?</h2>
-      <div class="design-checks">
-        <div class="design-check"><strong>Relevant</strong>Retrieve knowledge students will actually need.</div>
-        <div class="design-check"><strong>From memory</strong>Ask learners to recall, not simply recognise.</div>
-        <div class="design-check"><strong>Inclusive</strong>Give everyone an opportunity to participate.</div>
-        <div class="design-check"><strong>Low stakes</strong>Let students attempt answers without penalty for forgetting.</div>
-        <div class="design-check"><strong>Feedback</strong>Make sure students can establish the correct or complete answer.</div>
-        <div class="design-check"><strong>Purposeful</strong>Use the activity to learn something useful about what students know.</div>
-      </div>
-
-      <h3>Which gives the stronger retrieval opportunity?</h3>
-      <div class="choice-grid" id="scenarioChoices">
-        <button class="choice" data-answer="a"><strong>Teacher A:</strong> displays last week's summary slide and talks through it.</button>
-        <button class="choice" data-answer="b"><strong>Teacher B:</strong> asks everyone to reconstruct the key ideas first, then displays the summary so they can check.</button>
-      </div>
-      <div class="feedback" id="scenarioFeedback"></div>
-    </section>
-
-    <!-- Slide 13 -->
-    <section class="slide" data-slide="12">
-      <div class="eyebrow">Return to Rosenshine</div>
-      <h2>Principle 10: Bring it back again</h2>
-      <p class="quote">“Engage students in weekly and monthly review.”</p>
-      <p>Repeated review helps learners develop knowledge that is well connected and readily available.</p>
-
-      <div class="callout">
-        <strong>Quick retrieval challenge:</strong><br/>
-        Without going back, can you remember what Principle 1 said?
-      </div>
-      <textarea id="p1Again" placeholder="Type what you remember. Exact wording isn't necessary."></textarea>
-      <div style="margin-top:12px"><button class="btn ghost" id="revealP1Again">Reveal Principle 1</button></div>
-      <div class="feedback" id="p1AgainFeedback">
-        <strong>Principle 1:</strong> Begin a lesson with a short review of previous learning.<br/><br/>
-        Principle 1 asks us to bring previous learning into today's lesson. Principle 10 reminds us to <strong>keep bringing older learning back over time</strong>.
-      </div>
-    </section>
-
-    <!-- Slide 14 -->
-    <section class="slide" data-slide="13">
-      <div class="eyebrow">Over time</div>
-      <h2>What could you bring back — and when?</h2>
-      <p>Imagine students learn an important concept <strong>today</strong>. It could be retrieved later today, next lesson, next week, next month, or whenever it becomes relevant again.</p>
-      <p class="callout">We don't need to retrieve everything, every time. The aim is to deliberately revisit <strong>important knowledge that students will need to retain and use.</strong></p>
-
-      <p><strong>Try it:</strong> click a piece of learning, then click the point on the timeline where you might deliberately bring it back. There is no single correct answer.</p>
-      <div id="timelineBank" class="sort-bank">
-        <button class="sort-card time-source">Key terminology</button>
-        <button class="sort-card time-source">A multi-step process</button>
-        <button class="sort-card time-source">A common misconception</button>
-        <button class="sort-card time-source">A concept needed in a later unit</button>
-      </div>
-      <div class="timeline">
-        <div class="timebox" data-time="Later today"><h4>Later today</h4></div>
-        <div class="timebox" data-time="Next lesson"><h4>Next lesson</h4></div>
-        <div class="timebox" data-time="Next week"><h4>Next week</h4></div>
-        <div class="timebox" data-time="Next month"><h4>Next month</h4></div>
-        <div class="timebox" data-time="When relevant again"><h4>When relevant again</h4></div>
-      </div>
-      <div class="feedback show">Think beyond: <strong>“What did we do last lesson?”</strong> Retrieval can deliberately reach further back when older knowledge is important for future learning.</div>
-    </section>
-
-    <!-- Slide 15 -->
-    <section class="slide" data-slide="14">
-      <div class="eyebrow">Course complete</div>
-      <h2>Bring learning back</h2>
-      <p>Retrieval is not a particular app, quiz or starter activity. It is the act of asking learners to <strong>bring previously learned knowledge back to mind</strong>.</p>
-      <ul class="checklist">
-        <li>Rosenshine's Principle 1 emphasises short review of previous learning.</li>
-        <li>Retrieval is different from simply re-exposing students to information.</li>
-        <li>There are many ways to retrieve — not just quizzes.</li>
-        <li>Retrieval should focus on useful, relevant knowledge.</li>
-        <li>Principle 10 reminds us to revisit learning over longer periods.</li>
-      </ul>
-      <div class="callout">
-        <strong>What next?</strong><br/>
+<!-- Slide 14 -->
+<section class="slide" data-slide="12"><div class="eyebrow">Over time</div><h2>Bring important learning back over time</h2><p><strong>Remember, Rosenshine’s 10th principle also focused on retrieval:</strong></p><p class="quote">“Engage students in weekly and monthly review.”</p><p>Repeated review helps learners develop knowledge that is well connected and readily available. <strong>What could you bring back, and when?</strong> Imagine students learn an important concept <strong>today</strong>. It could be retrieved later today, next lesson, next week, next month, or whenever it becomes relevant again.</p><div class="timeline visual-only"><div class="timebox"><h4>Today</h4></div><div class="timebox"><h4>Later today</h4></div><div class="timebox"><h4>Next lesson</h4></div><div class="timebox"><h4>Next week</h4></div><div class="timebox"><h4>Next month</h4></div><div class="timebox"><h4>When relevant again</h4></div></div><p class="callout"><strong>We don't need to retrieve everything, every time.</strong> The aim is to deliberately revisit <strong>important knowledge that students will need to retain and use!</strong></p></section>
+<!-- Slide 15 -->
+<section class="slide" data-slide="13">
+<div class="eyebrow">Course complete</div>
+<h2>Bring learning back</h2>
+<p>Retrieval is not a particular app, quiz or starter activity. It is the act of asking learners to <strong>bring previously learned knowledge back to mind</strong>.</p>
+<ul class="checklist">
+<li>Rosenshine's Principle 1 emphasises short review of previous learning.</li>
+<li>Retrieval is different from simply re-exposing students to information.</li>
+<li>There are many ways to retrieve — not just quizzes.</li>
+<li>Retrieval should focus on useful, relevant knowledge.</li>
+<li>Principle 10 reminds us to revisit learning over longer periods.</li>
+</ul>
+<div class="callout">
+<strong>What next?</strong><br/>
         Complete the short knowledge check on the VLE, then use the Retrieval Planning Template to plan how you could apply retrieval in one of your own sessions.
       </div>
-      <div class="complete-actions">
-        <button class="btn ghost" id="downloadTemplate">Download Retrieval Planning Template</button>
-        <button class="btn" id="completeCourse">Complete course</button>
-      </div>
-      <div class="feedback" id="completeFeedback">Course completion has been recorded.</div>
-    </section>
-
-  </div>
+<div class="complete-actions">
+<button class="btn ghost" id="downloadTemplate">Download Retrieval Planning Template</button>
+<button class="btn" id="completeCourse">Complete course</button>
+</div>
+<div class="feedback" id="completeFeedback">Course completion has been recorded.</div>
+</section>
+</div>
 </main>
-
 <footer class="footer">
-  <div class="footer-inner">
-    <button id="backBtn" type="button" class="btn secondary">Back</button>
-    <span id="navStatus">Page <span id="slideNum">1</span> of <span id="slideCount">15</span></span>
-    <button id="nextBtn" type="button" class="btn">Next</button>
-  </div>
+<div class="footer-inner">
+<button class="btn secondary" id="backBtn" type="button">Back</button>
+<span id="navStatus">Page <span id="slideNum">1</span> of <span id="slideCount">14</span></span>
+<button class="btn" id="nextBtn" type="button">Next</button>
+</div>
 </footer>
-
-<script>
-(function(){
-  const slides = [...document.querySelectorAll('.slide')];
-  const slideNum = document.getElementById('slideNum');
-  const slideCount = document.getElementById('slideCount');
-  const progressLabel = document.getElementById('progressLabel');
-  const progressFill = document.getElementById('progressFill');
-  const backBtn = document.getElementById('backBtn');
-  const nextBtn = document.getElementById('nextBtn');
-
-  let current = 0;
-  let selectedSortCard = null;
-  let selectedTimelineItem = null;
-  let memoryRecallText = '';
-
-  // -------- SCORM 1.2 lightweight adapter --------
-  function findAPI(win){
-    let tries = 0;
-    while(win && !win.API && win.parent && win.parent !== win && tries < 10){
-      win = win.parent; tries++;
-    }
-    return win && win.API ? win.API : null;
-  }
-  const API = findAPI(window);
-  function scormInit(){
-    try{
-      if(API){
-        API.LMSInitialize("");
-        const loc = API.LMSGetValue("cmi.core.lesson_location");
-        const parsed = parseInt(loc,10);
-        if(!isNaN(parsed) && parsed >= 0 && parsed < slides.length) current = parsed;
-        const status = API.LMSGetValue("cmi.core.lesson_status");
-        if(!status || status === "not attempted") API.LMSSetValue("cmi.core.lesson_status","incomplete");
-        API.LMSCommit("");
-      }
-    }catch(e){}
-  }
-  function scormSet(name,value){
-    try{
-      if(API){ API.LMSSetValue(name,String(value)); API.LMSCommit(""); }
-    }catch(e){}
-  }
-  function scormInteraction(id,response,result="neutral"){
-    try{
-      if(!API) return;
-      let idx = parseInt(sessionStorage.getItem("scormInteractionIndex") || "0",10);
-      API.LMSSetValue(`cmi.interactions.${idx}.id`, id);
-      API.LMSSetValue(`cmi.interactions.${idx}.type`, "choice");
-      API.LMSSetValue(`cmi.interactions.${idx}.student_response`, response);
-      API.LMSSetValue(`cmi.interactions.${idx}.result`, result);
-      API.LMSSetValue(`cmi.interactions.${idx}.time`, new Date().toTimeString().slice(0,8));
-      API.LMSCommit("");
-      sessionStorage.setItem("scormInteractionIndex", String(idx+1));
-    }catch(e){}
-  }
-  function completeSCORM(){
-    scormSet("cmi.core.lesson_status","completed");
-  }
-  window.addEventListener('beforeunload',()=>{
-    try{ if(API){ API.LMSSetValue("cmi.core.lesson_location",String(current)); API.LMSCommit(""); API.LMSFinish(""); } }catch(e){}
-  });
-
-  function showSlide(index){
-    current = Math.max(0, Math.min(index, slides.length-1));
-    slides.forEach((s,i)=>s.classList.toggle('active', i===current));
-    slideNum.textContent = current+1;
-    slideCount.textContent = slides.length;
-    progressLabel.textContent = `${current+1} of ${slides.length}`;
-    progressFill.style.width = `${((current+1)/slides.length)*100}%`;
-    backBtn.disabled = current===0;
-    nextBtn.style.visibility = current===slides.length-1 ? 'hidden' : 'visible';
-    scormSet("cmi.core.lesson_location", current);
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-
-  backBtn.addEventListener('click',()=>showSlide(current-1));
-  nextBtn.addEventListener('click',()=>showSlide(current+1));
-
-  // Slide 2 source reveals
-  document.querySelectorAll('.source-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      btn.classList.toggle('open');
-      if(btn.classList.contains('open')) scormInteraction(btn.dataset.interaction,"opened");
-    });
-  });
-
-  // Slide 4 recall
-  document.getElementById('revealP1').addEventListener('click',()=>{
-    const text = document.getElementById('principle1Recall').value.trim();
-    document.getElementById('p1Feedback').classList.add('show');
-    scormInteraction("principle1-initial-recall", text ? "attempted" : "no-response");
-  });
-
-  // Slide 5 choice
-  document.querySelectorAll('#reviewChoices .choice').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('#reviewChoices .choice').forEach(x=>x.classList.remove('selected'));
-      btn.classList.add('selected');
-      const fb = document.getElementById('reviewFeedback');
-      if(btn.dataset.answer === 'retrieval'){
-        fb.innerHTML = "<strong>Yes.</strong> This option requires students to bring previously learned information back to mind rather than simply seeing or hearing it again.";
-      }else{
-        fb.innerHTML = "<strong>This revisits the material, but it is re-exposure rather than retrieval.</strong> The information is being shown or explained again rather than generated from memory.";
-      }
-      fb.classList.add('show');
-      scormInteraction("review-vs-retrieval", btn.textContent.trim(), btn.dataset.answer === 'retrieval' ? "correct":"incorrect");
-    });
-  });
-
-  // Slide 6 click-sort
-  const bank = document.getElementById('sortBank');
-  document.querySelectorAll('#sortBank .sort-card').forEach(card=>{
-    card.addEventListener('click',()=>{
-      document.querySelectorAll('#sortBank .sort-card, #retrievalTarget .sort-card, #reexposureTarget .sort-card').forEach(x=>x.style.outline='');
-      selectedSortCard = card;
-      card.style.outline = "3px solid var(--brand)";
-    });
-  });
-  function makeSortable(card){
-    card.addEventListener('click',()=>{
-      document.querySelectorAll('#sortBank .sort-card, #retrievalTarget .sort-card, #reexposureTarget .sort-card').forEach(x=>x.style.outline='');
-      selectedSortCard = card;
-      card.style.outline = "3px solid var(--brand)";
-    });
-  }
-  document.getElementById('placeRetrieval').addEventListener('click',()=>{
-    if(selectedSortCard){ selectedSortCard.style.outline=''; document.getElementById('retrievalTarget').appendChild(selectedSortCard); selectedSortCard=null; }
-  });
-  document.getElementById('placeReexposure').addEventListener('click',()=>{
-    if(selectedSortCard){ selectedSortCard.style.outline=''; document.getElementById('reexposureTarget').appendChild(selectedSortCard); selectedSortCard=null; }
-  });
-  document.getElementById('checkSort').addEventListener('click',()=>{
-    const cards = [...document.querySelectorAll('#retrievalTarget .sort-card, #reexposureTarget .sort-card')];
-    const fb = document.getElementById('sortFeedback');
-    if(cards.length < 6){
-      fb.textContent = "Place all six examples before checking.";
-      fb.classList.add('show');
-      return;
-    }
-    let correct = 0;
-    cards.forEach(card=>{
-      const zone = card.parentElement.dataset.zone;
-      if(card.dataset.correct === zone) correct++;
-    });
-    fb.innerHTML = `<strong>${correct}/6 placed as intended.</strong> The key distinction is whether students must generate the previous learning from memory, rather than encounter it again.`;
-    fb.classList.add('show');
-    scormInteraction("retrieval-reexposure-sort", `${correct}/6`, correct===6 ? "correct":"neutral");
-  });
-
-  // Slide 7 pathway
-  document.querySelectorAll('.mini-reveal').forEach(btn=>{
-    btn.addEventListener('click',()=>btn.parentElement.classList.toggle('open'));
-  });
-
-  // Slide 8 memory experience
-  document.getElementById('memoryReady').addEventListener('click',()=>{
-    document.getElementById('memoryStudy').style.display='none';
-    document.getElementById('memoryDistractor').style.display='grid';
-    let n = 10;
-    const timer = document.getElementById('distractTimer');
-    timer.textContent = n;
-    const int = setInterval(()=>{
-      n--;
-      timer.textContent = n;
-      if(n<=0){
-        clearInterval(int);
-        document.getElementById('memoryDistractor').style.display='none';
-        document.getElementById('memoryRecall').style.display='block';
-      }
-    },1000);
-  });
-  document.getElementById('memoryDone').addEventListener('click',()=>{
-    memoryRecallText = document.getElementById('memoryInput').value.trim();
-    sessionStorage.setItem('memoryRecallText', memoryRecallText);
-    scormInteraction("memory-retrieval-experiment", memoryRecallText ? "attempted":"no-response");
-    showSlide(8);
-    updateRecallCount();
-  });
-
-  function updateRecallCount(){
-    const words = ["river","candle","bicycle","lemon","window","tiger","button","guitar","cloud","key"];
-    const text = (memoryRecallText || sessionStorage.getItem('memoryRecallText') || '').toLowerCase();
-    if(!text){ document.getElementById('recallCount').textContent = ''; return; }
-    const hit = words.filter(w=>new RegExp(`\\b${w}\\b`,'i').test(text)).length;
-    document.getElementById('recallCount').textContent = `You recalled ${hit} of the 10 words. This is not scored; the important part was the attempt to retrieve them.`;
-  }
-
-  // Flip cards
-  document.querySelectorAll('[data-flip]').forEach(card=>{
-    card.setAttribute('tabindex','0');
-    const toggle=()=>card.classList.toggle('show');
-    card.addEventListener('click',toggle);
-    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
-  });
-
-  // Slide 12 scenario
-  document.querySelectorAll('#scenarioChoices .choice').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('#scenarioChoices .choice').forEach(x=>x.classList.remove('selected'));
-      btn.classList.add('selected');
-      const fb=document.getElementById('scenarioFeedback');
-      if(btn.dataset.answer==='b'){
-        fb.innerHTML="<strong>Teacher B provides the stronger retrieval opportunity.</strong> Students first have to generate the key ideas from memory, then receive feedback by comparing their recall with the summary.";
-      }else{
-        fb.innerHTML="<strong>Teacher A provides review through re-exposure.</strong> Students encounter the information again, but they are not required to retrieve it first.";
-      }
-      fb.classList.add('show');
-      scormInteraction("scenario-comparison", btn.dataset.answer, btn.dataset.answer==='b' ? "correct":"incorrect");
-    });
-  });
-
-  // Slide 13 recall
-  document.getElementById('revealP1Again').addEventListener('click',()=>{
-    const text=document.getElementById('p1Again').value.trim();
-    document.getElementById('p1AgainFeedback').classList.add('show');
-    scormInteraction("principle1-delayed-recall", text ? "attempted":"no-response");
-  });
-
-  // Slide 14 timeline
-  document.querySelectorAll('.time-source').forEach(item=>{
-    item.addEventListener('click',()=>{
-      document.querySelectorAll('.time-source,.timeitem').forEach(x=>x.style.outline='');
-      selectedTimelineItem=item;
-      item.style.outline='3px solid var(--brand)';
-    });
-  });
-  document.querySelectorAll('.timebox').forEach(box=>{
-    box.addEventListener('click',()=>{
-      if(!selectedTimelineItem) return;
-      const moved=document.createElement('div');
-      moved.className='timeitem';
-      moved.textContent=selectedTimelineItem.textContent;
-      moved.dataset.original=selectedTimelineItem.textContent;
-      moved.addEventListener('click',()=>{
-        document.querySelectorAll('.time-source,.timeitem').forEach(x=>x.style.outline='');
-        selectedTimelineItem=moved;
-        moved.style.outline='3px solid var(--brand)';
-      });
-      box.appendChild(moved);
-      selectedTimelineItem.remove();
-      selectedTimelineItem=null;
-      const placements=[...document.querySelectorAll('.timebox')].map(b=>`${b.dataset.time}:${[...b.querySelectorAll('.timeitem')].map(i=>i.textContent).join(',')}`).join('|');
-      scormInteraction("retrieval-timeline", placements);
-    });
-  });
-
-  // Downloadable simple template
-  document.getElementById('downloadTemplate').addEventListener('click',()=>{
-    const content = `RETRIEVAL PLANNING TEMPLATE
-
-1. What important prior knowledge will students need?
-____________________________________________________
-
-2. When should students retrieve it?
-☐ Start of lesson   ☐ Later in lesson   ☐ Next lesson
-☐ Next week         ☐ Next month       ☐ When relevant again
-
-3. Which retrieval technique will you use?
-____________________________________________________
-
-4. How will students retrieve from memory rather than simply re-read/re-watch?
-____________________________________________________
-
-5. How will you provide feedback or correction?
-____________________________________________________
-
-6. How will you ensure everyone participates?
-____________________________________________________
-
-7. What will you learn from students' responses?
-____________________________________________________
-`;
-    const blob=new Blob([content],{type:'text/plain'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download='Retrieval-Planning-Template.txt';a.click();
-    URL.revokeObjectURL(url);
-    scormInteraction("planning-template","downloaded");
-  });
-
-  document.getElementById('completeCourse').addEventListener('click',()=>{
-    completeSCORM();
-    document.getElementById('completeFeedback').classList.add('show');
-  });
-
-  scormInit();
-  showSlide(current);
-  updateRecallCount();
-})();
-</script>
+<script src="scorm_api.js"></script>
+<script src="module.js"></script>
 </body>
 </html>
